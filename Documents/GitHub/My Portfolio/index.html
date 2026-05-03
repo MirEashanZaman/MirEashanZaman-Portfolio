@@ -1844,6 +1844,35 @@
                     const fieldId = el.dataset.f;
                     if (data[fieldId]) el.innerHTML = data[fieldId];
                 });
+                if (data.pf_pic) showProfilePic(data.pf_pic);
+                if (data.cloud_proj) projects = JSON.parse(data.cloud_proj);
+                if (data.cloud_certs) certs = JSON.parse(data.cloud_certs);
+                if (data.cloud_cv) localStorage.setItem('pf_cv', data.cloud_cv);
+            }
+        }
+
+        // --- MIGRATION LOGIC (Brings back your projects/certs) ---
+        async function migrateLocalToCloud() {
+            if (!isAdmin) return; // Only admin can trigger the migration push
+
+            // Migrate Projects
+            const localProj = localStorage.getItem('pf_proj');
+            if (localProj) {
+                const cloudDoc = await getDoc(doc(db, "portfolio", "content"));
+                if (!cloudDoc.exists() || !cloudDoc.data().cloud_proj) {
+                    await saveFieldToCloud('cloud_proj', localProj);
+                    projects = JSON.parse(localProj);
+                }
+            }
+
+            // Migrate Certs
+            const localCerts = localStorage.getItem('pf_certs');
+            if (localCerts) {
+                const cloudDoc = await getDoc(doc(db, "portfolio", "content"));
+                if (!cloudDoc.exists() || !cloudDoc.data().cloud_certs) {
+                    await saveFieldToCloud('cloud_certs', localCerts);
+                    certs = JSON.parse(localCerts);
+                }
             }
         }
 
@@ -1875,7 +1904,7 @@
             renderProjects();
             renderPhotos();
             renderCerts();
-            renderCV(); // Added CV render here
+            renderCV();
         }
 
         function initEditableFields() {
@@ -1885,16 +1914,15 @@
             });
         }
 
-        // --- CV / RESUME LOGIC (RESTORED) ---
-        window.handleCV = function (e) {
+        // --- CV / RESUME ---
+        window.handleCV = async function (e) {
             const f = e.target.files[0];
-            if (!f || f.type !== 'application/pdf') {
-                alert("Please upload a PDF file.");
-                return;
-            }
+            if (!f || f.type !== 'application/pdf') { alert("Please upload a PDF file."); return; }
             const r = new FileReader();
-            r.onload = ev => {
-                localStorage.setItem('pf_cv', ev.target.result);
+            r.onload = async ev => {
+                const base64 = ev.target.result;
+                await saveFieldToCloud('cloud_cv', base64);
+                localStorage.setItem('pf_cv', base64);
                 renderCV();
             };
             r.readAsDataURL(f);
@@ -1905,30 +1933,20 @@
             if (!area) return;
             const cv = localStorage.getItem('pf_cv');
             if (editing) {
-                area.innerHTML = `<button class="btn btn-o btn-s" onclick="document.getElementById('cv-up').click()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload PDF
-            </button>`;
+                area.innerHTML = `<button class="btn btn-o btn-s" onclick="document.getElementById('cv-up').click()">Upload PDF</button>`;
             } else if (cv) {
-                area.innerHTML = `<a href="${cv}" download="Resume_Mir_Eashan_Zaman.pdf" class="btn btn-p btn-s">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Download CV
-            </a>`;
+                area.innerHTML = `<a href="${cv}" download="Resume.pdf" class="btn btn-p btn-s">Download CV</a>`;
             } else {
-                area.innerHTML = `<button class="btn btn-o btn-s" disabled>No CV uploaded yet</button>`;
+                area.innerHTML = `<button class="btn btn-o btn-s" disabled>No CV uploaded</button>`;
             }
         }
 
-        // --- SOCIALS & CONTACT ---
+        // --- SOCIALS ---
         window.saveSocials = function () {
-            const gh = document.getElementById('in-gh').value;
-            const li = document.getElementById('in-li').value;
-            const em = document.getElementById('in-em').value;
-            localStorage.setItem('s_gh', gh);
-            localStorage.setItem('s_li', li);
-            localStorage.setItem('s_em', em);
-            loadSocials();
-            loadContactLinks();
+            localStorage.setItem('s_gh', document.getElementById('in-gh').value);
+            localStorage.setItem('s_li', document.getElementById('in-li').value);
+            localStorage.setItem('s_em', document.getElementById('in-em').value);
+            loadSocials(); loadContactLinks();
         }
 
         function loadSocials() {
@@ -1947,8 +1965,7 @@
             localStorage.setItem('s_gh', document.getElementById('cein-gh').value);
             localStorage.setItem('s_li', document.getElementById('cein-li').value);
             localStorage.setItem('s_em', document.getElementById('cein-em').value);
-            loadSocials();
-            loadContactLinks();
+            loadSocials(); loadContactLinks();
         }
 
         function loadContactLinks() {
@@ -1958,18 +1975,16 @@
             const cgh = document.getElementById('cgh'); if (cgh) { cgh.href = gh; cgh.textContent = gh.replace('https://', ''); }
             const cli = document.getElementById('cli'); if (cli) { cli.href = li; cli.textContent = li.replace('https://', ''); }
             const cem = document.getElementById('cem'); if (cem) { cem.href = 'mailto:' + em; cem.textContent = em; }
-            const a = document.getElementById('cein-gh'); if (a) a.value = gh;
-            const b = document.getElementById('cein-li'); if (b) b.value = li;
-            const c = document.getElementById('cein-em'); if (c) c.value = em;
         }
 
         // --- PROFILE PICTURE ---
         window.triggerPhotoUp = function () { if (editing) document.getElementById('pup').click(); }
-        window.handleProfilePic = function (e) {
+        window.handleProfilePic = async function (e) {
             const f = e.target.files[0]; if (!f) return;
-            const r = new FileReader();
-            r.onload = ev => { localStorage.setItem('pf_pic', ev.target.result); showProfilePic(ev.target.result); };
-            r.readAsDataURL(f);
+            const compressed = await compressImage(f);
+            if (!compressed) return;
+            await saveFieldToCloud('pf_pic', compressed);
+            showProfilePic(compressed);
         }
         function showProfilePic(src) {
             const img = document.getElementById('pimg');
@@ -1977,31 +1992,89 @@
             const ph = document.getElementById('pph'); if (ph) ph.style.display = 'none';
         }
 
-        // --- DATA HANDLING ---
-        const defaultProjects = [
-            { id: 'p1', cat: 'game', name: 'Neon Strike', stack: ['HTML', 'JS'], desc: 'A fast-paced arcade shooter built with vanilla JS and HTML5 Canvas.', link: 'https://neon-strike01.netlify.app' },
-            { id: 'p2', cat: 'game', name: 'Sky Dasher', stack: ['HTML', 'JS'], desc: 'An endless runner game with smooth scrolling and dynamic obstacle generation.', link: 'https://sky-dasher.netlify.app' },
-            { id: 'p3', cat: 'game', name: 'Snake', stack: ['JavaScript'], desc: 'Classic Snake re-imagined with neon visuals and increasing speed.', link: 'https://snake-game-nostalgia.netlify.app' },
-            { id: 'p4', cat: 'management', name: 'Hotel Management System', stack: ['PHP', 'MySQL', 'HTML/CSS/JS'], desc: 'Full-featured hotel booking and room management system with admin dashboard.', link: '#' },
-            { id: 'p5', cat: 'management', name: 'Pharmacy Management System', stack: ['PHP', 'MySQL', 'HTML/CSS/JS'], desc: 'Inventory and sales tracking system for pharmacy operations.', link: '#' },
-            { id: 'p6', cat: 'management', name: 'Car Showroom Management System', stack: ['C#'], desc: 'Desktop application for managing car inventory, sales, and customer records.', link: '#' },
-            { id: 'p7', cat: 'management', name: 'Oil Supply & Delivery Management System', stack: ['PHP', 'MySQL'], desc: 'Supply chain tracking and delivery management for oil distribution.', link: '#' },
-        ];
+        // --- PROJECTS (Cloud) ---
+        window.addProj = async function () {
+            const name = prompt('Project name:'); if (!name) return;
+            const cat = confirm('Is this a game?\nOK = Game | Cancel = Management') ? 'game' : 'management';
+            const desc = prompt('Short description:') || '';
+            const stack = (prompt('Stack (comma separated):') || '').split(',').map(s => s.trim()).filter(Boolean);
+            const link = prompt('Project Link (URL):') || '#';
+            projects.push({ id: 'p' + Date.now(), cat, name, desc, stack, link });
+            await saveFieldToCloud('cloud_proj', JSON.stringify(projects));
+            renderProjects();
+        }
 
-        const defaultCerts = [
-            { id: 'c1', issuer: 'Oracle', name: 'AI for You', date: 'Apr 2026', color: '#c74634', lbl: 'OR', link: '#' },
-            { id: 'c2', issuer: 'Microsoft', name: 'Introduction to AI Concepts', date: 'Apr 2026', color: '#00a4ef', lbl: 'MS', link: '#' },
-            { id: 'c3', issuer: 'Google', name: 'Introduction to Image Generation', date: 'Apr 2026', color: '#fbbc05', lbl: 'G', link: '#' },
-            { id: 'c4', issuer: 'Microsoft', name: 'GitHub Copilot Fundamentals', date: 'Apr 2026', color: '#00a4ef', lbl: 'MS', link: '#' },
-            { id: 'c5', issuer: 'Anthropic', name: 'Building with the Claude API', date: 'Apr 2026', color: '#d97757', lbl: 'AN', link: '#' },
-            { id: 'c6', issuer: 'Anthropic', name: 'Model Context Protocol', date: 'Apr 2026', color: '#d97757', lbl: 'AN', link: '#' },
-            { id: 'c7', issuer: 'Anthropic', name: 'Claude Code in Action', date: 'Apr 2026', color: '#d97757', lbl: 'AN', link: '#' },
-            { id: 'c8', issuer: 'Anthropic', name: 'Claude in Amazon Bedrock', date: 'Apr 2026', color: '#d97757', lbl: 'AN', link: '#' },
-            { id: 'c9', issuer: 'Anthropic', name: 'Claude with Google Cloud Vertex AI', date: 'Apr 2026', color: '#d97757', lbl: 'AN', link: '#' },
-            { id: 'c10', issuer: 'Microsoft', name: 'C# Foundations Series', date: 'Jan 2026', color: '#00a4ef', lbl: 'MS', link: '#' },
-            { id: 'c11', issuer: 'SkillEcted', name: 'Data Science Roadmap 2025', date: 'Apr 2026', color: '#a78bfa', lbl: 'SK', link: '#' },
-        ];
+        window.delProj = async function (id) {
+            if (!confirm('Delete this project?')) return;
+            projects = projects.filter(p => p.id !== id);
+            await saveFieldToCloud('cloud_proj', JSON.stringify(projects));
+            renderProjects();
+        }
 
+        function renderProjects() {
+            const g = document.getElementById('proj-grid'); if (!g) return;
+            g.innerHTML = '';
+            projects.forEach(p => {
+                if (pFilter !== 'all' && p.cat !== pFilter) return;
+                const d = document.createElement('div');
+                d.className = 'proj-card';
+                const linkBtn = (p.link && p.link !== '#') ? `<a href="${p.link}" target="_blank" class="btn btn-p btn-s" style="margin-top: 10px; justify-content: center;">Play</a>` : '';
+                d.innerHTML = `<div class="proj-cat">${p.cat === 'game' ? 'Game' : 'Management System'}</div><div class="proj-name">${p.name}</div><div class="proj-desc">${p.desc}</div><div class="proj-stack">${p.stack.map(s => `<span class="stag">${s}</span>`).join('')}</div>${linkBtn}${editing ? `<div style="margin-top:15px; display:flex; justify-content:flex-end;"><button class="btn-d" onclick="delProj('${p.id}')">Delete</button></div>` : ''}`;
+                g.appendChild(d);
+            });
+            if (editing) {
+                const ac = document.createElement('button');
+                ac.className = 'add-card';
+                ac.innerHTML = `Add Project`;
+                ac.onclick = addProj;
+                g.appendChild(ac);
+            }
+        }
+
+        window.filterP = function (cat, btn) {
+            pFilter = cat;
+            document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+            btn.classList.add('on');
+            renderProjects();
+        }
+
+        // --- CERTS (Cloud) ---
+        window.addCert = async function () {
+            const name = prompt('Certification name:'); if (!name) return;
+            const issuer = prompt('Issuer:') || '';
+            const date = prompt('Date:') || '';
+            const link = prompt('Link:') || '#';
+            certs.push({ id: 'c' + Date.now(), name, issuer, date, link, lbl: issuer[0] || '?', color: '#6366f1' });
+            await saveFieldToCloud('cloud_certs', JSON.stringify(certs));
+            renderCerts();
+        }
+
+        window.delCert = async function (id) {
+            if (!confirm('Remove this certification?')) return;
+            certs = certs.filter(c => c.id !== id);
+            await saveFieldToCloud('cloud_certs', JSON.stringify(certs));
+            renderCerts();
+        }
+
+        function renderCerts() {
+            const g = document.getElementById('cert-grid'); if (!g) return;
+            g.innerHTML = '';
+            certs.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'cert-card';
+                el.innerHTML = `<button class="cert-del" onclick="delCert('${c.id}'); event.stopPropagation()">✕</button><div class="cert-hd"><div class="cert-badge" style="color:${c.color || 'var(--primary)'}">${c.lbl || c.issuer[0]}</div><div class="cert-date">${c.date}</div></div><div class="cert-name">${c.name}</div><div class="cert-iss">${c.issuer}</div>`;
+                g.appendChild(el);
+            });
+            if (editing) {
+                const ac = document.createElement('button');
+                ac.className = 'add-cert';
+                ac.innerHTML = `Add Certification`;
+                ac.onclick = addCert;
+                g.appendChild(ac);
+            }
+        }
+
+        // --- GALLERY (Local Only) ---
         async function openDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open("MEZ_Portfolio_DB", 1);
@@ -2052,13 +2125,13 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         let width = img.width, height = img.height;
-                        const MAX_SIZE = 1000;
+                        const MAX_SIZE = 800;
                         if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } }
                         else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
             });
@@ -2075,51 +2148,6 @@
             }
             renderPhotos();
             e.target.value = '';
-        }
-
-        function renderProjects() {
-            const g = document.getElementById('proj-grid'); if (!g) return;
-            g.innerHTML = '';
-            projects.forEach(p => {
-                if (pFilter !== 'all' && p.cat !== pFilter) return;
-                const d = document.createElement('div');
-                d.className = 'proj-card';
-                const linkBtn = (p.link && p.link !== '#') ? `<a href="${p.link}" target="_blank" class="btn btn-p btn-s" style="margin-top: 10px; justify-content: center;">Play</a>` : '';
-                d.innerHTML = `<div class="proj-cat">${p.cat === 'game' ? 'Game' : 'Management System'}</div><div class="proj-name">${p.name}</div><div class="proj-desc">${p.desc}</div><div class="proj-stack">${p.stack.map(s => `<span class="stag">${s}</span>`).join('')}</div>${linkBtn}${editing ? `<div style="margin-top:15px; display:flex; justify-content:flex-end;"><button class="btn-d" onclick="delProj('${p.id}')">Delete</button></div>` : ''}`;
-                g.appendChild(d);
-            });
-            if (editing) {
-                const ac = document.createElement('button');
-                ac.className = 'add-card';
-                ac.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Project`;
-                ac.onclick = addProj;
-                g.appendChild(ac);
-            }
-        }
-
-        window.filterP = function (cat, btn) {
-            pFilter = cat;
-            document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
-            btn.classList.add('on');
-            renderProjects();
-        }
-
-        window.addProj = function () {
-            const name = prompt('Project name:'); if (!name) return;
-            const cat = confirm('Is this a game?\nOK = Game | Cancel = Management System') ? 'game' : 'management';
-            const desc = prompt('Short description:') || '';
-            const stack = (prompt('Stack (comma separated):') || '').split(',').map(s => s.trim()).filter(Boolean);
-            const link = prompt('Project Link (URL):') || '#';
-            projects.push({ id: 'p' + Date.now(), cat, name, desc, stack, link });
-            localStorage.setItem('pf_proj', JSON.stringify(projects));
-            renderProjects();
-        }
-
-        window.delProj = function (id) {
-            if (!confirm('Delete this project?')) return;
-            projects = projects.filter(p => p.id !== id);
-            localStorage.setItem('pf_proj', JSON.stringify(projects));
-            renderProjects();
         }
 
         async function renderPhotos() {
@@ -2162,41 +2190,6 @@
             document.getElementById('lb').classList.remove('open');
         }
 
-        function renderCerts() {
-            const g = document.getElementById('cert-grid'); if (!g) return;
-            g.innerHTML = '';
-            certs.forEach(c => {
-                const el = document.createElement('div');
-                el.className = 'cert-card';
-                el.innerHTML = `<button class="cert-del" onclick="delCert('${c.id}'); event.stopPropagation()">✕</button><div class="cert-hd"><div class="cert-badge" style="color:${c.color || 'var(--primary)'}">${c.lbl || c.issuer[0]}</div><div class="cert-date">${c.date}</div></div><div class="cert-name">${c.name}</div><div class="cert-iss">${c.issuer}</div>`;
-                g.appendChild(el);
-            });
-            if (editing) {
-                const ac = document.createElement('button');
-                ac.className = 'add-cert';
-                ac.onclick = addCert;
-                ac.innerHTML = `Add Certification`;
-                g.appendChild(ac);
-            }
-        }
-
-        window.addCert = function () {
-            const name = prompt('Certification name:'); if (!name) return;
-            const issuer = prompt('Issuer:') || '';
-            const date = prompt('Date:') || '';
-            const link = prompt('Link:') || '#';
-            certs.push({ id: 'c' + Date.now(), name, issuer, date, link, lbl: issuer[0] || '?', color: '#6366f1' });
-            localStorage.setItem('pf_certs', JSON.stringify(certs));
-            renderCerts();
-        }
-
-        window.delCert = function (id) {
-            if (!confirm('Remove this certification?')) return;
-            certs = certs.filter(c => c.id !== id);
-            localStorage.setItem('pf_certs', JSON.stringify(certs));
-            renderCerts();
-        }
-
         function initParticles() {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
@@ -2234,18 +2227,20 @@
 
         async function init() {
             if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+
+            // 1. Load from Cloud
             await loadFieldsFromCloud();
+
+            // 2. Check for local data to migrate (Only happens once)
+            await migrateLocalToCloud();
+
             initEditableFields();
             loadSocials();
             loadContactLinks();
-            const pic = localStorage.getItem('pf_pic');
-            if (pic) showProfilePic(pic);
-            projects = JSON.parse(localStorage.getItem('pf_proj') || 'null') || defaultProjects;
-            certs = JSON.parse(localStorage.getItem('pf_certs') || 'null') || defaultCerts;
             renderProjects();
             renderCerts();
             renderPhotos();
-            renderCV(); // Call CV render on start
+            renderCV();
             go('home');
             initParticles();
         }
@@ -2257,6 +2252,7 @@
             localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
         };
     </script>
+
 
 </body>
 
