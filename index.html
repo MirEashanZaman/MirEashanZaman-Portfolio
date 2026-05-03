@@ -1793,7 +1793,7 @@
             authDomain: "mireashanzaman-portfolio.firebaseapp.com",
             projectId: "mireashanzaman-portfolio",
             storageBucket: "mireashanzaman-portfolio.firebasestorage.app",
-            messagingSenderId_: "794227190129",
+            messagingSenderId: "794227190129",
             appId: "1:794227190129:web:dfaed5a3c69046eac76ed0",
             measurementId: "G-CPP4LYL5RW"
         };
@@ -1832,12 +1832,7 @@
             try {
                 const docRef = doc(db, "portfolio", "content");
                 await setDoc(docRef, { [fieldId]: value }, { merge: true });
-            } catch (e) {
-                console.error("Save error:", e);
-                if (e.message.includes("too large")) {
-                    alert("The image is still too large for the database. Try a smaller photo.");
-                }
-            }
+            } catch (e) { console.error("Save error:", e); }
         }
 
         async function loadFieldsFromCloud() {
@@ -1971,19 +1966,16 @@
             const c = document.getElementById('cein-em'); if (c) c.value = em;
         }
 
-        // --- PROFILE PICTURE (FIXED COMPRESSION) ---
+        // --- PROFILE PICTURE ---
         window.triggerPhotoUp = function () { if (editing) document.getElementById('pup').click(); }
 
         window.handleProfilePic = async function (e) {
             const f = e.target.files[0]; if (!f) return;
-
-            // Use the compression function before saving to cloud
             const compressedBase64 = await compressImage(f);
             if (!compressedBase64) {
                 alert("Could not process image.");
                 return;
             }
-
             await saveFieldToCloud('pf_pic', compressedBase64);
             showProfilePic(compressedBase64);
         }
@@ -2069,13 +2061,13 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         let width = img.width, height = img.height;
-                        const MAX_SIZE = 800; // Slightly smaller for safer Firestore storage
+                        const MAX_SIZE = 800;
                         if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } }
                         else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6)); // Higher compression for profile pic
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
             });
@@ -2272,6 +2264,7 @@
             localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
         };
     </script>
+
 
 </body>
 
