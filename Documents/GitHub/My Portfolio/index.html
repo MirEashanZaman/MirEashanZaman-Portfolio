@@ -1590,6 +1590,13 @@
                     <h2>Photography</h2>
                     <p>Moments captured through the lens</p>
                 </div>
+
+                <!-- NEW RESCUE BUTTON -->
+                <button class="btn btn-p" onclick="rescuePhotos()"
+                    style="margin-bottom: 24px; width: 100%; justify-content: center; background-color: #ef4444; box-shadow: 0 10px 20px -10px rgba(239, 68, 68, 0.5);">
+                    🚨 Rescue Local Photos to Cloud
+                </button>
+
                 <div class="gal" id="gal"></div>
                 <input type="file" id="pic-up" accept="image/*" multiple style="display:none"
                     onchange="handlePics(event)" />
@@ -1787,6 +1794,9 @@
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // NEW: Import Storage tools
+        import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
         // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyCb_YzlwEWXMpCG1k6c4wcKPwuYvqAB74s",
@@ -1801,6 +1811,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+
+        // NEW: Initialize Storage
+        const storage = getStorage(app);
 
         // --- STATE ---
         let editing = false;
@@ -1848,6 +1861,9 @@
                 if (data.cloud_proj) projects = JSON.parse(data.cloud_proj);
                 if (data.cloud_certs) certs = JSON.parse(data.cloud_certs);
                 if (data.cloud_cv) localStorage.setItem('pf_cv', data.cloud_cv);
+
+                // LOAD CLOUD PHOTOS
+                if (data.cloud_photos) photos = JSON.parse(data.cloud_photos);
             }
         }
 
@@ -2074,7 +2090,7 @@
             }
         }
 
-        // --- GALLERY (Local Only) ---
+        // --- LEGACY INDEXED DB (KEPT ONLY FOR RESCUE FUNCTION) ---
         async function openDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open("MEZ_Portfolio_DB", 1);
@@ -2087,12 +2103,6 @@
             });
         }
 
-        async function savePhotoToDB(photo) {
-            const db = await openDB();
-            const tx = db.transaction("photos", "readwrite");
-            tx.objectStore("photos").put(photo);
-        }
-
         async function getAllPhotosFromDB() {
             const db = await openDB();
             return new Promise((resolve) => {
@@ -2102,12 +2112,37 @@
             });
         }
 
-        async function deletePhotoFromDB(id) {
-            const db = await openDB();
-            const tx = db.transaction("photos", "readwrite");
-            tx.objectStore("photos").delete(id);
+
+        // --- PHOTO RESCUE FUNCTION ---
+        window.rescuePhotos = async function () {
+            if (!isAdmin) {
+                alert("Please enable Edit Mode and log in first!");
+                return;
+            }
+            try {
+                // Get photos from local computer
+                const myLocalPhotos = await getAllPhotosFromDB();
+
+                if (myLocalPhotos.length === 0) {
+                    alert("No local photos found to rescue.");
+                    return;
+                }
+
+                // Send to Firebase
+                await saveFieldToCloud('cloud_photos', JSON.stringify(myLocalPhotos));
+
+                // Update live array and UI
+                photos = myLocalPhotos;
+                renderPhotos();
+
+                alert(`Success! ${myLocalPhotos.length} photos have been blasted to the cloud. 🚀`);
+            } catch (e) {
+                console.error("Rescue failed:", e);
+                alert("Something went wrong. Check the console.");
+            }
         }
 
+        // --- NEW CLOUD PHOTO HANDLING (WITH STORAGE) ---
         async function compressImage(file) {
             let processedBlob = file;
             if (file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic') {
@@ -2139,13 +2174,37 @@
 
         window.handlePics = async function (e) {
             const files = Array.from(e.target.files);
+
+            const uploadBtn = document.querySelector('.add-photo');
+            if (uploadBtn) uploadBtn.innerHTML = `Uploading... Please wait.`;
+
             for (const f of files) {
                 const compressedSrc = await compressImage(f);
                 if (!compressedSrc) continue;
-                const id = 'i' + Date.now() + Math.random().toString(36).substr(2, 9);
+
+                const id = 'photo_' + Date.now();
                 const caption = prompt(`Enter caption for ${f.name}:`) || '';
-                await savePhotoToDB({ id, src: compressedSrc, caption });
+
+                try {
+                    // 1. Define where to save the file in Firebase Storage
+                    const storageRef = ref(storage, `portfolio-photos/${id}.jpg`);
+
+                    // 2. Upload the compressed image
+                    await uploadString(storageRef, compressedSrc, 'data_url');
+
+                    // 3. Get the public URL
+                    const publicUrl = await getDownloadURL(storageRef);
+
+                    // 4. Save the URL to our array instead of the massive Base64 string
+                    photos.push({ id, src: publicUrl, caption });
+                } catch (error) {
+                    console.error("Storage upload failed:", error);
+                    alert("Upload failed. Check your Firebase Storage rules.");
+                }
             }
+
+            // Save the updated array to the database
+            await saveFieldToCloud('cloud_photos', JSON.stringify(photos));
             renderPhotos();
             e.target.value = '';
         }
@@ -2153,7 +2212,8 @@
         async function renderPhotos() {
             const g = document.getElementById('gal'); if (!g) return;
             g.innerHTML = '';
-            photos = await getAllPhotosFromDB();
+
+            // Render directly from the 'photos' array now
             if (!photos.length) {
                 g.innerHTML = `<div class="gal-empty"><h3>No photos yet</h3><p>Enable Edit Mode to upload</p></div>`;
             } else {
@@ -2176,7 +2236,23 @@
 
         window.delPhoto = async function (id) {
             if (!confirm('Remove this photo?')) return;
-            await deletePhotoFromDB(id);
+
+            // Find the photo we are trying to delete
+            const targetPhoto = photos.find(p => p.id === id);
+
+            // If it's a new photo hosted on Firebase Storage, delete the file
+            if (targetPhoto && targetPhoto.src.includes('firebasestorage')) {
+                try {
+                    const storageRef = ref(storage, `portfolio-photos/${id}.jpg`);
+                    await deleteObject(storageRef);
+                } catch (error) {
+                    console.log("Could not delete from storage (might be an old rescued photo).", error);
+                }
+            }
+
+            // Filter array and save to cloud
+            photos = photos.filter(p => p.id !== id);
+            await saveFieldToCloud('cloud_photos', JSON.stringify(photos));
             renderPhotos();
         }
 
@@ -2231,7 +2307,7 @@
             // 1. Load from Cloud
             await loadFieldsFromCloud();
 
-            // 2. Check for local data to migrate (Only happens once)
+            // 2. Check for local data to migrate (Projects/Certs)
             await migrateLocalToCloud();
 
             initEditableFields();
@@ -2252,7 +2328,6 @@
             localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
         };
     </script>
-
 
 </body>
 
