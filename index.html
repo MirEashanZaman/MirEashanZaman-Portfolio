@@ -1840,22 +1840,33 @@
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
+
+                // 1. Text Fields
                 document.querySelectorAll('[data-f]').forEach(el => {
                     const fieldId = el.dataset.f;
                     if (data[fieldId]) el.innerHTML = data[fieldId];
                 });
+
+                // 2. Profile Pic
                 if (data.pf_pic) showProfilePic(data.pf_pic);
+
+                // 3. Projects
                 if (data.cloud_proj) projects = JSON.parse(data.cloud_proj);
+
+                // 4. Certs
                 if (data.cloud_certs) certs = JSON.parse(data.cloud_certs);
+
+                // 5. Resume CV
                 if (data.cloud_cv) localStorage.setItem('pf_cv', data.cloud_cv);
+
+                // 6. Contact Links (Now Cloud)
+                if (data.cloud_gh) loadContactLinks(data.cloud_gh, data.cloud_li, data.cloud_em);
             }
         }
 
-        // --- MIGRATION LOGIC (Brings back your projects/certs) ---
+        // --- MIGRATION LOGIC ---
         async function migrateLocalToCloud() {
-            if (!isAdmin) return; // Only admin can trigger the migration push
-
-            // Migrate Projects
+            if (!isAdmin) return;
             const localProj = localStorage.getItem('pf_proj');
             if (localProj) {
                 const cloudDoc = await getDoc(doc(db, "portfolio", "content"));
@@ -1864,8 +1875,6 @@
                     projects = JSON.parse(localProj);
                 }
             }
-
-            // Migrate Certs
             const localCerts = localStorage.getItem('pf_certs');
             if (localCerts) {
                 const cloudDoc = await getDoc(doc(db, "portfolio", "content"));
@@ -1914,7 +1923,7 @@
             });
         }
 
-        // --- CV / RESUME ---
+        // --- CV / RESUME (Cloud) ---
         window.handleCV = async function (e) {
             const f = e.target.files[0];
             if (!f || f.type !== 'application/pdf') { alert("Please upload a PDF file."); return; }
@@ -1941,43 +1950,50 @@
             }
         }
 
-        // --- SOCIALS ---
-        window.saveSocials = function () {
-            localStorage.setItem('s_gh', document.getElementById('in-gh').value);
-            localStorage.setItem('s_li', document.getElementById('in-li').value);
-            localStorage.setItem('s_em', document.getElementById('in-em').value);
-            loadSocials(); loadContactLinks();
+        // --- SOCIALS & CONTACT (NOW CLOUD) ---
+        window.saveSocials = async function () {
+            const gh = document.getElementById('in-gh').value;
+            const li = document.getElementById('in-li').value;
+            const em = document.getElementById('in-em').value;
+            await saveFieldToCloud('cloud_gh', gh);
+            await saveFieldToCloud('cloud_li', li);
+            await saveFieldToCloud('cloud_em', em);
+            loadContactLinks(gh, li, em);
         }
 
-        function loadSocials() {
-            const gh = localStorage.getItem('s_gh') || 'https://github.com';
-            const li = localStorage.getItem('s_li') || 'https://linkedin.com';
-            const em = localStorage.getItem('s_em') || 'hello@example.com';
-            document.getElementById('sgh').href = gh;
-            document.getElementById('sli').href = li;
-            document.getElementById('sem').href = em.startsWith('mailto:') ? em : 'mailto:' + em;
-            document.getElementById('in-gh').value = gh;
-            document.getElementById('in-li').value = li;
-            document.getElementById('in-em').value = em.replace('mailto:', '');
+        window.saveContactLinks = async function () {
+            const gh = document.getElementById('cein-gh').value;
+            const li = document.getElementById('cein-li').value;
+            const em = document.getElementById('cein-em').value;
+            await saveFieldToCloud('cloud_gh', gh);
+            await saveFieldToCloud('cloud_li', li);
+            await saveFieldToCloud('cloud_em', em);
+            loadContactLinks(gh, li, em);
         }
 
-        window.saveContactLinks = function () {
-            localStorage.setItem('s_gh', document.getElementById('cein-gh').value);
-            localStorage.setItem('s_li', document.getElementById('cein-li').value);
-            localStorage.setItem('s_em', document.getElementById('cein-em').value);
-            loadSocials(); loadContactLinks();
+        function loadContactLinks(gh, li, em) {
+            const finalGh = gh || 'https://github.com';
+            const finalLi = li || 'https://linkedin.com';
+            const finalEm = em || 'mireashan@example.com';
+
+            document.getElementById('sgh').href = finalGh;
+            document.getElementById('sli').href = finalLi;
+            document.getElementById('sem').href = finalEm.startsWith('mailto:') ? finalEm : 'mailto:' + finalEm;
+
+            document.getElementById('in-gh').value = finalGh;
+            document.getElementById('in-li').value = finalLi;
+            document.getElementById('in-em').value = finalEm.replace('mailto:', '');
+
+            const cgh = document.getElementById('cgh'); if (cgh) { cgh.href = finalGh; cgh.textContent = finalGh.replace('https://', ''); }
+            const cli = document.getElementById('cli'); if (cli) { cli.href = finalLi; cli.textContent = finalLi.replace('https://', ''); }
+            const cem = document.getElementById('cem'); if (cem) { cem.href = 'mailto:' + finalEm; cem.textContent = finalEm; }
+
+            document.getElementById('cein-gh').value = finalGh;
+            document.getElementById('cein-li').value = finalLi;
+            document.getElementById('cein-em').value = finalEm;
         }
 
-        function loadContactLinks() {
-            const gh = localStorage.getItem('s_gh') || 'https://github.com';
-            const li = localStorage.getItem('s_li') || 'https://linkedin.com';
-            const em = (localStorage.getItem('s_em') || 'mireashan@example.com').replace('mailto:', '');
-            const cgh = document.getElementById('cgh'); if (cgh) { cgh.href = gh; cgh.textContent = gh.replace('https://', ''); }
-            const cli = document.getElementById('cli'); if (cli) { cli.href = li; cli.textContent = li.replace('https://', ''); }
-            const cem = document.getElementById('cem'); if (cem) { cem.href = 'mailto:' + em; cem.textContent = em; }
-        }
-
-        // --- PROFILE PICTURE ---
+        // --- PROFILE PICTURE (Cloud) ---
         window.triggerPhotoUp = function () { if (editing) document.getElementById('pup').click(); }
         window.handleProfilePic = async function (e) {
             const f = e.target.files[0]; if (!f) return;
@@ -2227,16 +2243,19 @@
 
         async function init() {
             if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
-
-            // 1. Load from Cloud
             await loadFieldsFromCloud();
-
-            // 2. Check for local data to migrate (Only happens once)
             await migrateLocalToCloud();
-
             initEditableFields();
-            loadSocials();
-            loadContactLinks();
+
+            // Load contact links from cloud if available, otherwise defaults
+            const cloudDoc = await getDoc(doc(db, "portfolio", "content"));
+            if (cloudDoc.exists()) {
+                const d = cloudDoc.data();
+                loadContactLinks(d.cloud_gh, d.cloud_li, d.cloud_em);
+            } else {
+                loadContactLinks();
+            }
+
             renderProjects();
             renderCerts();
             renderPhotos();
@@ -2252,7 +2271,6 @@
             localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
         };
     </script>
-
 
 </body>
 
