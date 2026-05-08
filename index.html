@@ -7,11 +7,12 @@
     <title>Mir Eashan Zaman — Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     <link
         href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Figtree:wght@300;400;500;600;700&display=swap"
         rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 
     <style>
         *,
@@ -71,7 +72,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             transition: background 0.4s, color 0.4s;
-            cursor: default;
+            cursor: none;
         }
 
         h1,
@@ -91,7 +92,72 @@
             font-family: var(--font);
         }
 
-        /* ═══════════════ THREE.JS CANVAS ═══════════════ */
+        /* ── Custom Cursor System ── */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            pointer-events: none;
+            z-index: 99999;
+            transition: transform 0.15s cubic-bezier(.22, .68, 0, 1.2), opacity 0.2s;
+            will-change: transform;
+        }
+
+        #cursor-ring {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99998;
+            transition: width 0.3s cubic-bezier(.22, .68, 0, 1.2),
+                height 0.3s cubic-bezier(.22, .68, 0, 1.2),
+                border-color 0.3s,
+                background 0.3s,
+                opacity 0.3s;
+            will-change: transform;
+            opacity: 0.5;
+        }
+
+        #cursor-label {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--primary-l);
+            background: rgba(12, 12, 24, 0.85);
+            border: 1px solid var(--border);
+            padding: 3px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            backdrop-filter: blur(8px);
+        }
+
+        body.light-mode #cursor-label {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        #cursor-label.show {
+            opacity: 1;
+        }
+
+        /* Hide default cursor everywhere */
+        *,
+        *::before,
+        *::after {
+            cursor: none !important;
+        }
+
         #three-canvas {
             position: fixed;
             inset: 0;
@@ -99,21 +165,15 @@
             pointer-events: none;
         }
 
-        /* Scanline overlay for depth */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
             z-index: 1;
             pointer-events: none;
-            background: repeating-linear-gradient(0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(0, 0, 0, 0.04) 2px,
-                    rgba(0, 0, 0, 0.04) 4px);
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 4px);
         }
 
-        /* Vignette */
         body::after {
             content: '';
             position: fixed;
@@ -127,7 +187,6 @@
             background: radial-gradient(ellipse at center, transparent 40%, rgba(240, 238, 255, 0.5) 100%);
         }
 
-        /* ═══════════════ NAV ═══════════════ */
         nav {
             position: fixed;
             top: 0;
@@ -150,7 +209,6 @@
             font-size: 1.1rem;
             font-weight: 500;
             color: var(--primary-l);
-            cursor: pointer;
             border: none;
             background: none;
             letter-spacing: 0.05em;
@@ -179,7 +237,6 @@
             color: var(--muted);
             background: none;
             border: none;
-            cursor: pointer;
             padding: 6px 14px;
             border-radius: 8px;
             letter-spacing: 0.03em;
@@ -205,7 +262,6 @@
             border: 1px solid var(--border);
             background: var(--card);
             color: var(--text);
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -227,7 +283,6 @@
             background: transparent;
             color: var(--muted);
             font-size: .8rem;
-            cursor: pointer;
             transition: all .2s;
         }
 
@@ -246,7 +301,6 @@
             background: none;
             border: none;
             color: var(--text);
-            cursor: pointer;
         }
 
         .mobile-menu {
@@ -274,7 +328,6 @@
             color: var(--muted);
             background: none;
             border: none;
-            cursor: pointer;
             padding: 10px 14px;
             border-radius: 10px;
             text-align: left;
@@ -287,7 +340,6 @@
             color: var(--primary-l);
         }
 
-        /* ═══════════════ APP ═══════════════ */
         #app {
             position: relative;
             z-index: 2;
@@ -330,7 +382,6 @@
             padding: 0 28px;
         }
 
-        /* ═══════════════ EDIT PILL ═══════════════ */
         .edit-pill {
             position: fixed;
             bottom: 26px;
@@ -404,7 +455,6 @@
 
         body.editing [data-f] {
             outline: 1.5px dashed rgba(124, 92, 252, .45);
-            cursor: text;
             padding: 2px 4px;
         }
 
@@ -413,7 +463,6 @@
             background: rgba(124, 92, 252, .06);
         }
 
-        /* ═══════════════ BUTTONS ═══════════════ */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -422,7 +471,6 @@
             border-radius: 12px;
             font-size: .92rem;
             font-weight: 600;
-            cursor: pointer;
             border: none;
             transition: all .25s;
             font-family: var(--font);
@@ -465,11 +513,9 @@
             padding: 5px 10px;
             font-size: .75rem;
             border-radius: 6px;
-            cursor: pointer;
             border: none;
         }
 
-        /* ═══════════════ HOME ═══════════════ */
         .sys-badge {
             display: inline-flex;
             align-items: center;
@@ -544,7 +590,6 @@
             flex-wrap: wrap;
         }
 
-        /* Glowing orb behind name */
         .home-orb {
             position: absolute;
             width: 600px;
@@ -570,7 +615,6 @@
             }
         }
 
-        /* ═══════════════ PAGE HEADERS ═══════════════ */
         .ph {
             padding: 56px 0 40px;
             text-align: center;
@@ -591,7 +635,6 @@
             font-size: .93rem;
         }
 
-        /* ═══════════════ ABOUT ═══════════════ */
         .about-grid {
             display: grid;
             grid-template-columns: 260px 1fr;
@@ -650,7 +693,6 @@
             background: rgba(0, 0, 0, .65);
             align-items: center;
             justify-content: center;
-            cursor: pointer;
             color: #fff;
             flex-direction: column;
             gap: 6px;
@@ -678,7 +720,6 @@
             background: var(--card2);
             color: var(--muted);
             transition: all .2s;
-            cursor: pointer;
         }
 
         .soc:hover {
@@ -768,7 +809,6 @@
             font-family: var(--font-mono);
         }
 
-        /* ═══════════════ PROJECTS ═══════════════ */
         .filter-tabs {
             display: flex;
             gap: 8px;
@@ -784,7 +824,6 @@
             background: transparent;
             color: var(--muted);
             font-size: .83rem;
-            cursor: pointer;
             transition: all .2s;
             font-family: var(--font);
         }
@@ -880,7 +919,6 @@
             flex-direction: column;
             gap: 8px;
             padding: 40px;
-            cursor: pointer;
             color: var(--muted);
             transition: all .2s;
             background: transparent;
@@ -897,7 +935,6 @@
             display: flex;
         }
 
-        /* ═══════════════ PHOTOGRAPHY ═══════════════ */
         .gal {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -912,7 +949,6 @@
             background: var(--card2);
             border: 1px solid var(--border);
             aspect-ratio: 4/3;
-            cursor: pointer;
             transition: all .3s;
         }
 
@@ -955,7 +991,6 @@
             border-radius: 7px;
             width: 28px;
             height: 28px;
-            cursor: pointer;
             display: none;
             align-items: center;
             justify-content: center;
@@ -975,7 +1010,6 @@
             justify-content: center;
             flex-direction: column;
             gap: 7px;
-            cursor: pointer;
             color: var(--muted);
             transition: all .2s;
             aspect-ratio: 4/3;
@@ -1002,7 +1036,6 @@
             border-radius: 18px;
         }
 
-        /* Lightbox */
         .lb {
             position: fixed;
             inset: 0;
@@ -1043,14 +1076,12 @@
             width: 40px;
             height: 40px;
             border-radius: 10px;
-            cursor: pointer;
             font-size: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* ═══════════════ RESUME ═══════════════ */
         .cv-card {
             background: var(--card2);
             border: 1px solid var(--border);
@@ -1229,7 +1260,6 @@
             border-radius: 5px;
             width: 22px;
             height: 22px;
-            cursor: pointer;
             display: none;
             align-items: center;
             justify-content: center;
@@ -1249,7 +1279,6 @@
             justify-content: center;
             flex-direction: column;
             gap: 7px;
-            cursor: pointer;
             color: var(--muted);
             transition: all .2s;
             min-height: 90px;
@@ -1267,7 +1296,6 @@
             display: flex;
         }
 
-        /* ═══════════════ CONTACT ═══════════════ */
         .con-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1417,7 +1445,15 @@
             text-align: center;
         }
 
-        /* ═══════════════ RESPONSIVE ═══════════════ */
+        /* ── Cursor Trail Particles ── */
+        .cursor-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99997;
+            border-radius: 50%;
+            will-change: transform, opacity;
+        }
+
         @media(max-width:768px) {
 
             .nav-links,
@@ -1453,6 +1489,20 @@
             .cur-card {
                 grid-template-columns: 1fr 1fr;
             }
+
+            /* Show native cursor on mobile/touch */
+            body,
+            *,
+            *::before,
+            *::after {
+                cursor: auto !important;
+            }
+
+            #custom-cursor,
+            #cursor-ring,
+            #cursor-label {
+                display: none !important;
+            }
         }
 
         @media(max-width:480px) {
@@ -1469,26 +1519,49 @@
                 justify-content: center;
             }
         }
+
+        /* ── Interactive Hover Effects (Optimized) ── */
+        .interactive-element {
+            position: relative;
+            transform-style: preserve-3d;
+            will-change: transform, box-shadow;
+        }
+
+        .interactive-element.hover-active {
+            box-shadow: 0 20px 40px -12px rgba(124, 92, 252, 0.2);
+        }
     </style>
 </head>
 
 <body class="dark-mode">
 
-    <!-- THREE.JS CANVAS -->
     <canvas id="three-canvas"></canvas>
 
+    <!-- Custom Cursor Elements -->
+    <div id="custom-cursor"></div>
+    <div id="cursor-ring"></div>
+    <div id="cursor-label"></div>
+
     <nav>
-        <button class="logo" onclick="go('home')">MEZ_</button>
+        <button class="logo" onclick="go('home')" data-cursor="home" data-cursor-icon="terminal"
+            data-cursor-color="#a78bfa">MEZ_</button>
         <ul class="nav-links">
-            <li><button onclick="go('home')" data-p="home">Home</button></li>
-            <li><button onclick="go('about')" data-p="about">About</button></li>
-            <li><button onclick="go('portfolio')" data-p="portfolio">Projects</button></li>
-            <li><button onclick="go('photography')" data-p="photography">Photography</button></li>
-            <li><button onclick="go('resume')" data-p="resume">Resume</button></li>
-            <li><button onclick="go('contact')" data-p="contact">Contact</button></li>
+            <li><button onclick="go('home')" data-p="home" data-cursor="navigate" data-cursor-icon="home"
+                    data-cursor-color="#7c5cfc">Home</button></li>
+            <li><button onclick="go('about')" data-p="about" data-cursor="navigate" data-cursor-icon="user"
+                    data-cursor-color="#22d3ee">About</button></li>
+            <li><button onclick="go('portfolio')" data-p="portfolio" data-cursor="navigate" data-cursor-icon="code"
+                    data-cursor-color="#a855f7">Projects</button></li>
+            <li><button onclick="go('photography')" data-p="photography" data-cursor="navigate"
+                    data-cursor-icon="camera" data-cursor-color="#f472b6">Photography</button></li>
+            <li><button onclick="go('resume')" data-p="resume" data-cursor="navigate" data-cursor-icon="file"
+                    data-cursor-color="#22c55e">Resume</button></li>
+            <li><button onclick="go('contact')" data-p="contact" data-cursor="navigate" data-cursor-icon="mail"
+                    data-cursor-color="#f59e0b">Contact</button></li>
         </ul>
         <div class="nav-right">
-            <button class="btn-theme" onclick="toggleTheme()">
+            <button class="btn-theme" onclick="toggleTheme()" data-cursor="toggle" data-cursor-icon="sun-moon"
+                data-cursor-color="#fbbf24">
                 <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2">
                     <circle cx="12" cy="12" r="5" />
@@ -1502,14 +1575,16 @@
                     <line x1="18.22" y1="5.78" x2="19.63" y2="4.37" />
                 </svg>
             </button>
-            <button class="btn-edit" id="ebtn" onclick="toggleEdit()">
+            <button class="btn-edit" id="ebtn" onclick="toggleEdit()" data-cursor="edit" data-cursor-icon="pencil"
+                data-cursor-color="#c026d3">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                     <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z" />
                 </svg>
                 <span id="elbl">Edit Mode</span>
             </button>
-            <button class="hamburger" onclick="toggleMob()">
+            <button class="hamburger" onclick="toggleMob()" data-cursor="menu" data-cursor-icon="menu"
+                data-cursor-color="#a78bfa">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="3" y1="12" x2="21" y2="12" />
                     <line x1="3" y1="6" x2="21" y2="6" />
@@ -1520,13 +1595,20 @@
     </nav>
 
     <div class="mobile-menu" id="mob">
-        <button onclick="go('home')" data-p="home">Home</button>
-        <button onclick="go('about')" data-p="about">About</button>
-        <button onclick="go('portfolio')" data-p="portfolio">Projects</button>
-        <button onclick="go('photography')" data-p="photography">Photography</button>
-        <button onclick="go('resume')" data-p="resume">Resume</button>
-        <button onclick="go('contact')" data-p="contact">Contact</button>
-        <button class="btn-edit" id="ebtn2" onclick="toggleEdit()">
+        <button onclick="go('home')" data-p="home" data-cursor="navigate" data-cursor-icon="home"
+            data-cursor-color="#7c5cfc">Home</button>
+        <button onclick="go('about')" data-p="about" data-cursor="navigate" data-cursor-icon="user"
+            data-cursor-color="#22d3ee">About</button>
+        <button onclick="go('portfolio')" data-p="portfolio" data-cursor="navigate" data-cursor-icon="code"
+            data-cursor-color="#a855f7">Projects</button>
+        <button onclick="go('photography')" data-p="photography" data-cursor="navigate" data-cursor-icon="camera"
+            data-cursor-color="#f472b6">Photography</button>
+        <button onclick="go('resume')" data-p="resume" data-cursor="navigate" data-cursor-icon="file"
+            data-cursor-color="#22c55e">Resume</button>
+        <button onclick="go('contact')" data-p="contact" data-cursor="navigate" data-cursor-icon="mail"
+            data-cursor-color="#f59e0b">Contact</button>
+        <button class="btn-edit" id="ebtn2" onclick="toggleEdit()" data-cursor="edit" data-cursor-icon="pencil"
+            data-cursor-color="#c026d3">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                 <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z" />
@@ -1536,7 +1618,6 @@
     </div>
 
     <div id="app">
-        <!-- HOME -->
         <section class="page" id="page-home">
             <div class="home-orb"></div>
             <div class="container" style="position:relative;z-index:2">
@@ -1549,13 +1630,14 @@
                 <p class="h-sub" data-f="home-sub" contenteditable="false">CSE student @ AIUB · Full-stack developer ·
                     Browser game builder</p>
                 <div class="h-ctas">
-                    <button class="btn btn-p" onclick="go('portfolio')">View My Projects</button>
-                    <button class="btn btn-o" onclick="go('contact')">Contact Me</button>
+                    <button class="btn btn-p" onclick="go('portfolio')" data-cursor="explore" data-cursor-icon="rocket"
+                        data-cursor-color="#a855f7">View My Projects</button>
+                    <button class="btn btn-o" onclick="go('contact')" data-cursor="connect" data-cursor-icon="handshake"
+                        data-cursor-color="#22d3ee">Contact Me</button>
                 </div>
             </div>
         </section>
 
-        <!-- ABOUT -->
         <section class="page" id="page-about">
             <div class="container">
                 <div class="ph">
@@ -1564,7 +1646,8 @@
                 </div>
                 <div class="about-grid">
                     <div class="photo-col">
-                        <div class="photo-box" id="pbox">
+                        <div class="photo-box" id="pbox" data-cursor="photo" data-cursor-icon="camera-portrait"
+                            data-cursor-color="#f472b6">
                             <div class="photo-ph" id="pph">
                                 <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="1.5">
@@ -1579,19 +1662,22 @@
                         <input type="file" id="pup" accept="image/*" style="display:none"
                             onchange="handleProfilePic(event)" />
                         <div class="socials">
-                            <a class="soc" id="sgh" href="#" target="_blank" title="GitHub">
+                            <a class="soc" id="sgh" href="#" target="_blank" title="GitHub" data-cursor="github"
+                                data-cursor-icon="github" data-cursor-color="#ffffff">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                     <path
                                         d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.94 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02.005 2.04.138 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.62-2.81 5.63-5.48 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
                                 </svg>
                             </a>
-                            <a class="soc" id="sli" href="#" target="_blank" title="LinkedIn">
+                            <a class="soc" id="sli" href="#" target="_blank" title="LinkedIn" data-cursor="linkedin"
+                                data-cursor-icon="linkedin" data-cursor-color="#0077b5">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                     <path
                                         d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.44-2.13 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 .77 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.21 24 24 23.23 24 22.27V1.73C24 .77 23.21 0 22.22 0z" />
                                 </svg>
                             </a>
-                            <a class="soc" id="sem" href="#" title="Email">
+                            <a class="soc" id="sem" href="#" title="Email" data-cursor="email"
+                                data-cursor-icon="envelope" data-cursor-color="#f59e0b">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -1619,24 +1705,34 @@
                                     contenteditable="false">Whatever's on my desk</span></div>
                         </div>
                         <div class="stack-g">
-                            <div class="stack-row"><span class="stack-lbl">Frontend</span><span
-                                    class="stag">HTML5</span><span class="stag">CSS3</span><span
-                                    class="stag">JavaScript</span></div>
-                            <div class="stack-row"><span class="stack-lbl">Backend</span><span
-                                    class="stag">PHP</span><span class="stag">MySQL</span><span class="stag">C#</span>
-                            </div>
-                            <div class="stack-row"><span class="stack-lbl">Games</span><span class="stag">Canvas
-                                    API</span><span class="stag">Vanilla JS</span></div>
-                            <div class="stack-row"><span class="stack-lbl">Tools</span><span
-                                    class="stag">Git</span><span class="stag">GitHub</span><span class="stag">VS
-                                    Code</span></div>
+                            <div class="stack-row"><span class="stack-lbl">Frontend</span><span class="stag"
+                                    data-cursor="tech" data-cursor-icon="html"
+                                    data-cursor-color="#e34f26">HTML5</span><span class="stag" data-cursor="tech"
+                                    data-cursor-icon="css" data-cursor-color="#1572b6">CSS3</span><span class="stag"
+                                    data-cursor="tech" data-cursor-icon="js"
+                                    data-cursor-color="#f7df1e">JavaScript</span></div>
+                            <div class="stack-row"><span class="stack-lbl">Backend</span><span class="stag"
+                                    data-cursor="tech" data-cursor-icon="php"
+                                    data-cursor-color="#777bb4">PHP</span><span class="stag" data-cursor="tech"
+                                    data-cursor-icon="database" data-cursor-color="#4479a1">MySQL</span><span
+                                    class="stag" data-cursor="tech" data-cursor-icon="csharp"
+                                    data-cursor-color="#239120">C#</span></div>
+                            <div class="stack-row"><span class="stack-lbl">Games</span><span class="stag"
+                                    data-cursor="tech" data-cursor-icon="gamepad" data-cursor-color="#22d3ee">Canvas
+                                    API</span><span class="stag" data-cursor="tech" data-cursor-icon="js"
+                                    data-cursor-color="#f7df1e">Vanilla JS</span></div>
+                            <div class="stack-row"><span class="stack-lbl">Tools</span><span class="stag"
+                                    data-cursor="tech" data-cursor-icon="git"
+                                    data-cursor-color="#f05032">Git</span><span class="stag" data-cursor="tech"
+                                    data-cursor-icon="github" data-cursor-color="#ffffff">GitHub</span><span
+                                    class="stag" data-cursor="tech" data-cursor-icon="vscode"
+                                    data-cursor-color="#007acc">VS Code</span></div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- PORTFOLIO -->
         <section class="page" id="page-portfolio">
             <div class="container">
                 <div class="ph">
@@ -1644,22 +1740,25 @@
                     <p>Games, management systems and web UIs I've built</p>
                 </div>
                 <div class="filter-tabs">
-                    <button class="tab on" onclick="filterP('all',this)">All</button>
-                    <button class="tab" onclick="filterP('game',this)">Games</button>
-                    <button class="tab" onclick="filterP('management',this)">Management Systems</button>
+                    <button class="tab on" onclick="filterP('all',this)" data-cursor="filter" data-cursor-icon="filter"
+                        data-cursor-color="#22d3ee">All</button>
+                    <button class="tab" onclick="filterP('game',this)" data-cursor="filter" data-cursor-icon="gamepad"
+                        data-cursor-color="#f472b6">Games</button>
+                    <button class="tab" onclick="filterP('management',this)" data-cursor="filter"
+                        data-cursor-icon="grid" data-cursor-color="#a855f7">Management Systems</button>
                 </div>
                 <div class="proj-grid" id="proj-grid"></div>
             </div>
         </section>
 
-        <!-- PHOTOGRAPHY -->
         <section class="page" id="page-photography">
             <div class="container">
                 <div class="ph">
                     <h2>Photography</h2>
                     <p>Moments captured through the lens</p>
                 </div>
-                <button class="btn btn-p" id="res-btn" onclick="rescuePhotos()"
+                <button class="btn btn-p" id="res-btn" onclick="rescuePhotos()" data-cursor="rescue"
+                    data-cursor-icon="alert" data-cursor-color="#ef4444"
                     style="margin-bottom:24px;width:100%;justify-content:center;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 10px 20px -10px rgba(239,68,68,.5);display:none;">
                     🚨 Rescue Local Photos to ImgBB
                 </button>
@@ -1669,7 +1768,6 @@
             </div>
         </section>
 
-        <!-- RESUME -->
         <section class="page" id="page-resume">
             <div class="container">
                 <div class="ph">
@@ -1757,7 +1855,6 @@
             </div>
         </section>
 
-        <!-- CONTACT -->
         <section class="page" id="page-contact">
             <div class="container">
                 <div class="ph">
@@ -1766,7 +1863,8 @@
                 </div>
                 <div class="con-grid">
                     <div class="con-info">
-                        <div class="con-card">
+                        <div class="con-card" data-cursor="github" data-cursor-icon="github"
+                            data-cursor-color="#ffffff">
                             <div class="con-icon">
                                 <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
                                     <path
@@ -1776,7 +1874,8 @@
                             <div class="con-body"><label>GitHub</label><a id="cgh" href="#" target="_blank">Setup in
                                     Edit Mode</a></div>
                         </div>
-                        <div class="con-card">
+                        <div class="con-card" data-cursor="linkedin" data-cursor-icon="linkedin"
+                            data-cursor-color="#0077b5">
                             <div class="con-icon" style="color:var(--accent)">
                                 <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
                                     <path
@@ -1786,7 +1885,8 @@
                             <div class="con-body"><label>LinkedIn</label><a id="cli" href="#" target="_blank">Setup in
                                     Edit Mode</a></div>
                         </div>
-                        <div class="con-card">
+                        <div class="con-card" data-cursor="email" data-cursor-icon="envelope"
+                            data-cursor-color="#f59e0b">
                             <div class="con-icon" style="color:#f59e0b">
                                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -1806,18 +1906,22 @@
                             <label>Email Address</label>
                             <input id="cein-em" type="email" placeholder="you@example.com" />
                             <button class="btn btn-p btn-s" style="margin-top:5px;justify-content:center"
-                                onclick="saveContactLinks()">Save Links to Cloud</button>
+                                onclick="saveContactLinks()" data-cursor="save" data-cursor-icon="cloud-upload"
+                                data-cursor-color="#22c55e">Save Links to Cloud</button>
                         </div>
                     </div>
                     <div class="cf">
                         <h3>Send a Message</h3>
-                        <div class="fg"><label>Name</label><input type="text" id="fn" placeholder="Your name" /></div>
-                        <div class="fg"><label>Email</label><input type="email" id="fe" placeholder="your@email.com" />
+                        <div class="fg"><label>Name</label><input type="text" id="fn" placeholder="Your name"
+                                data-cursor="type" data-cursor-icon="text-cursor" data-cursor-color="#a78bfa" /></div>
+                        <div class="fg"><label>Email</label><input type="email" id="fe" placeholder="your@email.com"
+                                data-cursor="type" data-cursor-icon="at-sign" data-cursor-color="#22d3ee" /></div>
+                        <div class="fg"><label>Message</label><textarea id="fm" placeholder="What's on your mind?"
+                                data-cursor="type" data-cursor-icon="message" data-cursor-color="#f472b6"></textarea>
                         </div>
-                        <div class="fg"><label>Message</label><textarea id="fm"
-                                placeholder="What's on your mind?"></textarea></div>
-                        <button class="btn btn-p" style="width:100%;justify-content:center" onclick="sendForm()">Send
-                            Message via Email App</button>
+                        <button class="btn btn-p" style="width:100%;justify-content:center" onclick="sendForm()"
+                            data-cursor="send" data-cursor-icon="paper-plane" data-cursor-color="#22d3ee">Send Message
+                            via Email App</button>
                         <div class="form-ok" id="fok">Opening your email app...</div>
                     </div>
                 </div>
@@ -1830,14 +1934,465 @@
     </div>
 
     <div class="lb" id="lb" onclick="closeLB(event)">
-        <button class="lb-close" onclick="closeLB()">✕</button>
+        <button class="lb-close" onclick="closeLB()" data-cursor="close" data-cursor-icon="x-circle"
+            data-cursor-color="#ef4444">✕</button>
         <img id="lb-img" src="" alt="" />
         <div class="lb-cap" id="lb-cap"></div>
     </div>
 
-    <!-- ═══════════════ PER-PAGE 3D SCENES ═══════════════ -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--  INTERACTIVE HOVER EFFECTS — Optimized for performance -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <script defer>
+        document.addEventListener('DOMContentLoaded', () => {
+            const interactiveSelector = '.proj-card, .gal-item, .cert-card, .con-card, .btn, .nav-links button, .soc, .photo-box';
+            let rafId = null;
+
+            function setupInteractiveElement(el) {
+                let isHovering = false;
+                let lastX = 0, lastY = 0;
+
+                el.addEventListener('mouseenter', () => {
+                    isHovering = true;
+                    el.classList.add('interactive-element', 'hover-active');
+                }, { passive: true });
+
+                el.addEventListener('mouseleave', () => {
+                    isHovering = false;
+                    el.classList.remove('hover-active');
+                    el.style.transform = '';
+                    el.style.boxShadow = '';
+                    if (rafId) cancelAnimationFrame(rafId);
+                }, { passive: true });
+
+                el.addEventListener('mousemove', (e) => {
+                    if (!isHovering) return;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+
+                    if (!rafId) {
+                        rafId = requestAnimationFrame(() => {
+                            const rect = el.getBoundingClientRect();
+                            const x = lastX - rect.left;
+                            const y = lastY - rect.top;
+                            const centerX = rect.width / 2;
+                            const centerY = rect.height / 2;
+
+                            const angleX = (y - centerY) / centerY * 0.02;
+                            const angleY = (x - centerX) / centerX * 0.02;
+                            const dist = Math.min(Math.sqrt(angleX * angleX + angleY * angleY), 1);
+
+                            el.style.transform = `perspective(1200px) rotateX(${angleX * 100}deg) rotateY(${angleY * 100}deg)`;
+                            el.style.boxShadow = `0 ${15 + dist * 25}px ${30 + dist * 35}px -12px rgba(124, 92, 252, ${0.15 + dist * 0.15})`;
+                            rafId = null;
+                        });
+                    }
+                }, { passive: true });
+            }
+
+            // Setup existing elements
+            document.querySelectorAll(interactiveSelector).forEach(setupInteractiveElement);
+
+            // Watch for new elements
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            if (node.matches(interactiveSelector)) setupInteractiveElement(node);
+                            node.querySelectorAll(interactiveSelector).forEach(setupInteractiveElement);
+                        }
+                    });
+                });
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--  SMART CURSOR SYSTEM — Icon changes per element type  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
     <script>
         (function () {
+            const cursor = document.getElementById('custom-cursor');
+            const ring = document.getElementById('cursor-ring');
+            const label = document.getElementById('cursor-label');
+
+            let mx = -100, my = -100, cx = -100, cy = -100, rx = -100, ry = -100;
+            let currentIcon = 'default';
+            let currentColor = '#7c5cfc';
+            let currentLabel = '';
+            let isClicking = false;
+            let particles = [];
+
+            // ── SVG Icon Library — each returns an SVG string ──
+            const icons = {
+                'default': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 3l14 9-6 2-3 7z" fill="${c}" stroke="#fff" stroke-width="1"/></svg>`,
+
+                'home': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12l9-8 9 8" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><path d="M5 10v9a1 1 0 001 1h3v-5h6v5h3a1 1 0 001-1v-9" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'user': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4.5" stroke="${c}" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'code': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polyline points="16 18 22 12 16 6" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="8 6 2 12 8 18" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+
+                'camera': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="14" rx="2" stroke="${c}" stroke-width="2"/><circle cx="12" cy="13" r="4" stroke="${c}" stroke-width="2"/><path d="M9 6V5a1 1 0 011-1h4a1 1 0 011 1v1" stroke="${c}" stroke-width="1.5"/></svg>`,
+
+                'camera-portrait': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="15" rx="2" fill="${c}33" stroke="${c}" stroke-width="1.5"/><circle cx="12" cy="13" r="4" stroke="${c}" stroke-width="1.5"/><circle cx="12" cy="13" r="1.5" fill="${c}"/><path d="M9 6V5a1 1 0 011-1h4a1 1 0 011 1v1" stroke="${c}" stroke-width="1.5"/></svg>`,
+
+                'file': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="${c}" stroke-width="2"/><polyline points="14 2 14 8 20 8" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'mail': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="${c}" stroke-width="2"/><polyline points="2,4 12,13 22,4" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'sun-moon': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="${c}" stroke-width="2"/><path d="M12 2v2M12 20v2M4.22 4.22l1.41 1.41M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.41-1.41M18.36 5.64l1.42-1.42" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'pencil': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" fill="${c}44" stroke="${c}" stroke-width="1.5"/><path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="${c}" stroke="${c}" stroke-width="0.5"/></svg>`,
+
+                'menu': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><line x1="4" y1="6" x2="20" y2="6" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="12" x2="20" y2="12" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="18" x2="20" y2="18" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+
+                'rocket': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 4 6 4 14l3 4h10l3-4c0-8-8-12-8-12z" fill="${c}33" stroke="${c}" stroke-width="1.5"/><circle cx="12" cy="11" r="2" fill="${c}"/><path d="M7 18l-2 4M17 18l2 4" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+
+                'handshake': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M2 14l4-4 4 2 4-4 4 2 4-4" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="10" r="1.5" fill="${c}"/><circle cx="18" cy="8" r="1.5" fill="${c}"/></svg>`,
+
+                'github': (c) => `<svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#24292e" stroke="${c}" stroke-width="1"/><path d="M12 2C6.48 2 2 6.37 2 11.68c0 4.29 2.87 7.93 6.84 9.22.5.09.68-.21.68-.47v-1.65c-2.78.59-3.37-1.3-3.37-1.3-.45-1.12-1.11-1.42-1.11-1.42-.91-.61.07-.6.07-.6 1 .07 1.53 1 1.53 1 .89 1.49 2.34 1.06 2.91.81.09-.63.35-1.06.63-1.3-2.22-.25-4.56-1.08-4.56-4.82 0-1.06.39-1.93 1.03-2.61-.1-.25-.45-1.24.1-2.58 0 0 .84-.26 2.75 1a9.74 9.74 0 012.5-.33c.85 0 1.7.11 2.5.33 1.91-1.26 2.75-1 2.75-1 .55 1.34.2 2.33.1 2.58.64.68 1.03 1.55 1.03 2.61 0 3.75-2.34 4.57-4.57 4.81.36.3.68.9.68 1.81v2.68c0 .26.18.57.69.47C19.14 19.6 22 15.97 22 11.68 22 6.37 17.52 2 12 2z" fill="white"/></svg>`,
+
+                'linkedin': (c) => `<svg width="22" height="22" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="${c}"/><path d="M6.94 5a1.56 1.56 0 110 3.12A1.56 1.56 0 016.94 5zM5.5 9.5H8.4v9H5.5v-9zM10.1 9.5h2.78v1.23h.04c.39-.72 1.33-1.48 2.74-1.48 2.93 0 3.47 1.88 3.47 4.33v4.92h-2.9v-4.36c0-1.04-.02-2.38-1.5-2.38-1.5 0-1.73 1.14-1.73 2.3v4.44H10.1v-9z" fill="white"/></svg>`,
+
+                'envelope': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" fill="${c}33" stroke="${c}" stroke-width="1.5"/><polyline points="2,5 12,14 22,5" stroke="white" stroke-width="1.5" fill="none"/></svg>`,
+
+                'terminal': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="18" rx="2" stroke="${c}" stroke-width="2"/><path d="M6 9l4 3-4 3" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="17" x2="18" y2="17" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'filter': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" stroke="${c}" stroke-width="2" stroke-linejoin="round"/></svg>`,
+
+                'gamepad': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="12" rx="4" stroke="${c}" stroke-width="2"/><line x1="8" y1="10" x2="8" y2="14" stroke="${c}" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="12" x2="10" y2="12" stroke="${c}" stroke-width="2" stroke-linecap="round"/><circle cx="15" cy="10" r="1" fill="${c}"/><circle cx="17" cy="13" r="1" fill="${c}"/></svg>`,
+
+                'grid': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="${c}" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="${c}" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="${c}" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'zoom-in': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="10" cy="10" r="7" stroke="${c}" stroke-width="2"/><line x1="15.5" y1="15.5" x2="21" y2="21" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="7" y1="10" x2="13" y2="10" stroke="${c}" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="7" x2="10" y2="13" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'plus-circle': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="${c}" stroke-width="2"/><line x1="8" y1="12" x2="16" y2="12" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="8" x2="12" y2="16" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+
+                'x-circle': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="${c}22" stroke="${c}" stroke-width="1.5"/><line x1="8" y1="8" x2="16" y2="16" stroke="${c}" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="8" x2="8" y2="16" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'trash': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6" stroke="${c}" stroke-width="2" stroke-linecap="round"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="${c}" stroke-width="2"/><line x1="10" y1="11" x2="10" y2="17" stroke="${c}" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="11" x2="14" y2="17" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'play': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="${c}" stroke-width="2"/><polygon points="10,8 18,12 10,16" fill="${c}"/></svg>`,
+
+                'download': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v13M7 12l5 5 5-5" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 19h18" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+
+                'upload': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 16V3M7 8l5-5 5 5" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 19h18" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+
+                'paper-plane': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="${c}" stroke-width="2" stroke-linecap="round"/><path d="M22 2L15 22 11 13 2 9l20-7z" stroke="${c}" stroke-width="1.5" stroke-linejoin="round" fill="${c}33"/></svg>`,
+
+                'cloud-upload': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17 18a5 5 0 00.5-9.97A7 7 0 003.08 13.1 4 4 0 004 21h13" stroke="${c}" stroke-width="2"/><path d="M12 13v-6M9 10l3-3 3 3" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+
+                'save': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="${c}" stroke-width="2"/><polyline points="17 21 17 13 7 13 7 21" stroke="${c}" stroke-width="2"/><polyline points="7 3 7 8 15 8" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'text-cursor': (c) => `<svg width="20" height="22" viewBox="0 0 24 24" fill="none"><line x1="12" y1="3" x2="12" y2="21" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><path d="M8 3h8M8 21h8" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'at-sign': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="${c}" stroke-width="2"/><path d="M16 12v1a3 3 0 006 0v-1a10 10 0 10-4 8" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'message': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="${c}" stroke-width="2"/><line x1="7" y1="8" x2="17" y2="8" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="12" x2="13" y2="12" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+
+                'alert': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" fill="${c}33" stroke="${c}" stroke-width="1.5"/><line x1="12" y1="9" x2="12" y2="13" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="${c}"/></svg>`,
+
+                'medal': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="6" stroke="${c}" stroke-width="2"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'briefcase': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="${c}" stroke-width="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'graduation': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="${c}" stroke-width="2"/><path d="M6 12v5c3 3 9 3 12 0v-5" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'html': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 3l1.8 17L12 22l6.2-2L20 3z" fill="${c}33" stroke="${c}" stroke-width="1.5"/><path d="M8 8h8l-.5 5-3.5 1.2L8.5 13" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+
+                'css': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 3l1.8 17L12 22l6.2-2L20 3z" fill="${c}33" stroke="${c}" stroke-width="1.5"/><path d="M7 7h10l-.3 3H9.5l.3 3h7l-.5 5L12 19.5 7.7 18l-.2-2" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+
+                'js': (c) => `<svg width="22" height="22" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" fill="${c}" stroke="${c}" stroke-width="0.5"/><text x="7" y="18" font-size="12" font-weight="bold" fill="#000" font-family="monospace">JS</text></svg>`,
+
+                'php': (c) => `<svg width="24" height="22" viewBox="0 0 28 22"><ellipse cx="14" cy="11" rx="13" ry="10" fill="${c}33" stroke="${c}" stroke-width="1.5"/><text x="5" y="15" font-size="10" font-weight="bold" fill="${c}" font-family="monospace">PHP</text></svg>`,
+
+                'database': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="5" rx="8" ry="3" stroke="${c}" stroke-width="2"/><path d="M20 5v14c0 1.66-3.58 3-8 3s-8-1.34-8-3V5" stroke="${c}" stroke-width="2"/><path d="M20 12c0 1.66-3.58 3-8 3s-8-1.34-8-3" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'csharp': (c) => `<svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="${c}33" stroke="${c}" stroke-width="1.5"/><text x="6" y="17" font-size="11" font-weight="bold" fill="${c}" font-family="monospace">C#</text></svg>`,
+
+                'git': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="2.5" stroke="${c}" stroke-width="2"/><circle cx="18" cy="6" r="2.5" stroke="${c}" stroke-width="2"/><circle cx="6" cy="18" r="2.5" stroke="${c}" stroke-width="2"/><line x1="6" y1="8.5" x2="6" y2="15.5" stroke="${c}" stroke-width="2"/><path d="M18 8.5v2a4 4 0 01-4 4H6" stroke="${c}" stroke-width="2"/></svg>`,
+
+                'vscode': (c) => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 2l5 3v14l-5 3-10-8L3 17V7l4-3 10 8z" fill="${c}33" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+
+                'project': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="${c}" stroke-width="2"/><path d="M9 8l4 4-4 4" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="14" y1="16" x2="18" y2="16" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+                'image': (c) => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="${c}" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="${c}"/><path d="M21 15l-5-5L5 21" stroke="${c}" stroke-width="2"/></svg>`,
+            };
+
+            function getIconSVG(name, color) {
+                const fn = icons[name] || icons['default'];
+                return fn(color);
+            }
+
+            function setCursorIcon(iconName, color) {
+                if (currentIcon === iconName && currentColor === color) return;
+                currentIcon = iconName;
+                currentColor = color;
+                cursor.innerHTML = getIconSVG(iconName, color);
+            }
+
+            function setCursorLabel(text) {
+                if (currentLabel === text) return;
+                currentLabel = text;
+                if (text) {
+                    label.textContent = text;
+                    label.classList.add('show');
+                } else {
+                    label.classList.remove('show');
+                }
+            }
+
+            function setRingStyle(color, size, bg) {
+                ring.style.borderColor = color;
+                ring.style.width = size + 'px';
+                ring.style.height = size + 'px';
+                ring.style.background = bg || 'transparent';
+            }
+
+            // ── Detect what the cursor is hovering over ──
+            function detectCursorContext(el) {
+                if (!el) return { icon: 'default', color: '#7c5cfc', label: '', ringSize: 44, ringBg: '' };
+
+                // Check for data-cursor attributes first
+                const closest = el.closest('[data-cursor]');
+                if (closest) {
+                    const iconName = closest.getAttribute('data-cursor-icon') || 'default';
+                    const color = closest.getAttribute('data-cursor-color') || '#7c5cfc';
+                    const cursorType = closest.getAttribute('data-cursor');
+                    let lbl = '';
+                    let ringSize = 52;
+                    let ringBg = color + '11';
+
+                    switch (cursorType) {
+                        case 'navigate': lbl = closest.textContent.trim(); break;
+                        case 'home': lbl = 'Home'; break;
+                        case 'explore': lbl = 'Explore'; ringSize = 60; break;
+                        case 'connect': lbl = 'Connect'; ringSize = 56; break;
+                        case 'toggle': lbl = 'Theme'; ringSize = 48; break;
+                        case 'edit': lbl = 'Edit'; ringSize = 50; break;
+                        case 'menu': lbl = 'Menu'; break;
+                        case 'github': lbl = 'GitHub'; ringSize = 56; break;
+                        case 'linkedin': lbl = 'LinkedIn'; ringSize = 56; break;
+                        case 'email': lbl = 'Email'; ringSize = 56; break;
+                        case 'tech': lbl = closest.textContent.trim(); ringSize = 46; break;
+                        case 'filter': lbl = 'Filter'; ringSize = 50; break;
+                        case 'photo': lbl = 'Photo'; ringSize = 54; break;
+                        case 'rescue': lbl = 'Rescue'; ringSize = 58; break;
+                        case 'send': lbl = 'Send'; ringSize = 56; break;
+                        case 'save': lbl = 'Save'; ringSize = 52; break;
+                        case 'close': lbl = 'Close'; ringSize = 48; break;
+                        case 'type': lbl = ''; ringSize = 40; break;
+                        default: lbl = cursorType;
+                    }
+                    return { icon: iconName, color, label: lbl, ringSize, ringBg };
+                }
+
+                // ── Auto-detect by element type/class ──
+
+                // Project cards
+                if (el.closest('.proj-card')) {
+                    return { icon: 'project', color: '#a855f7', label: 'View Project', ringSize: 60, ringBg: '#a855f722' };
+                }
+
+                // Play buttons inside project cards
+                if (el.closest('.proj-card a.btn-p')) {
+                    return { icon: 'play', color: '#22d3ee', label: 'Play', ringSize: 56, ringBg: '#22d3ee22' };
+                }
+
+                // Delete buttons
+                if (el.closest('.btn-d') || el.closest('.gal-del') || el.closest('.cert-del')) {
+                    return { icon: 'trash', color: '#ef4444', label: 'Delete', ringSize: 48, ringBg: '#ef444422' };
+                }
+
+                // Gallery items
+                if (el.closest('.gal-item')) {
+                    return { icon: 'zoom-in', color: '#f472b6', label: 'View', ringSize: 60, ringBg: '#f472b622' };
+                }
+
+                // Add buttons
+                if (el.closest('.add-card') || el.closest('.add-photo') || el.closest('.add-cert')) {
+                    return { icon: 'plus-circle', color: '#22c55e', label: 'Add New', ringSize: 56, ringBg: '#22c55e22' };
+                }
+
+                // Certificate cards
+                if (el.closest('.cert-card')) {
+                    return { icon: 'medal', color: '#fbbf24', label: 'Certificate', ringSize: 54, ringBg: '#fbbf2422' };
+                }
+
+                // Timeline items
+                if (el.closest('.tl-item.exp')) {
+                    return { icon: 'briefcase', color: '#22d3ee', label: 'Experience', ringSize: 52, ringBg: '#22d3ee15' };
+                }
+                if (el.closest('.tl-item.edu')) {
+                    return { icon: 'graduation', color: '#22c55e', label: 'Education', ringSize: 52, ringBg: '#22c55e15' };
+                }
+
+                // CV card
+                if (el.closest('.cv-card')) {
+                    return { icon: 'download', color: '#7c5cfc', label: 'Resume', ringSize: 56, ringBg: '#7c5cfc22' };
+                }
+
+                // Contact cards
+                if (el.closest('.con-card')) {
+                    return { icon: 'mail', color: '#f59e0b', label: 'Contact', ringSize: 52, ringBg: '#f59e0b22' };
+                }
+
+                // Form inputs
+                if (el.matches('input[type="text"], input[type="email"]')) {
+                    return { icon: 'text-cursor', color: '#a78bfa', label: '', ringSize: 36, ringBg: '#a78bfa11' };
+                }
+                if (el.matches('textarea')) {
+                    return { icon: 'message', color: '#f472b6', label: '', ringSize: 40, ringBg: '#f472b611' };
+                }
+
+                // Editable fields in edit mode
+                if (document.body.classList.contains('editing') && el.closest('[data-f]')) {
+                    return { icon: 'pencil', color: '#c026d3', label: 'Edit', ringSize: 46, ringBg: '#c026d322' };
+                }
+
+                // Lightbox
+                if (el.closest('.lb')) {
+                    return { icon: 'zoom-in', color: '#ffffff', label: 'Click to close', ringSize: 60, ringBg: '#ffffff11' };
+                }
+
+                // Stack tags
+                if (el.closest('.stag')) {
+                    return { icon: 'code', color: '#22d3ee', label: el.textContent.trim(), ringSize: 44, ringBg: '#22d3ee11' };
+                }
+
+                // Any button or link
+                if (el.matches('button, a, [role="button"]') || el.closest('button') || el.closest('a')) {
+                    return { icon: 'default', color: '#a78bfa', label: 'Click', ringSize: 50, ringBg: '#a78bfa11' };
+                }
+
+                // Heading text
+                if (el.matches('h1, h2, h3, h4, h5, h6') || el.closest('h1, h2, h3, h4, h5, h6')) {
+                    return { icon: 'default', color: '#7c5cfc', label: '', ringSize: 44, ringBg: '' };
+                }
+
+                return { icon: 'default', color: '#7c5cfc', label: '', ringSize: 44, ringBg: '' };
+            }
+
+            // ── Particle system on click ──
+            function spawnParticles(x, y, color) {
+                const count = 8 + Math.floor(Math.random() * 6);
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'cursor-particle';
+                    const size = Math.random() * 6 + 3;
+                    const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
+                    const velocity = 40 + Math.random() * 60;
+                    const dx = Math.cos(angle) * velocity;
+                    const dy = Math.sin(angle) * velocity;
+                    p.style.width = size + 'px';
+                    p.style.height = size + 'px';
+                    p.style.background = color;
+                    p.style.left = x + 'px';
+                    p.style.top = y + 'px';
+                    p.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+                    document.body.appendChild(p);
+
+                    const start = performance.now();
+                    const duration = 500 + Math.random() * 300;
+
+                    function animateParticle(now) {
+                        const elapsed = now - start;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const ease = 1 - Math.pow(1 - progress, 3);
+                        p.style.transform = `translate(${dx * ease}px, ${dy * ease + progress * 30}px) scale(${1 - progress})`;
+                        p.style.opacity = 1 - progress;
+                        if (progress < 1) {
+                            requestAnimationFrame(animateParticle);
+                        } else {
+                            p.remove();
+                        }
+                    }
+                    requestAnimationFrame(animateParticle);
+                }
+            }
+
+            // ── Mouse events ──
+            let hoveredEl = null;
+
+            document.addEventListener('mousemove', (e) => {
+                mx = e.clientX;
+                my = e.clientY;
+
+                const el = document.elementFromPoint(e.clientX, e.clientY);
+                if (el !== hoveredEl) {
+                    hoveredEl = el;
+                    const ctx = detectCursorContext(el);
+                    setCursorIcon(ctx.icon, ctx.color);
+                    setCursorLabel(ctx.label);
+                    setRingStyle(ctx.color, ctx.ringSize, ctx.ringBg);
+                }
+            });
+
+            document.addEventListener('mousedown', (e) => {
+                isClicking = true;
+                cursor.style.transform = `translate(${cx - 12}px, ${cy - 12}px) scale(0.75)`;
+                ring.style.transform = `translate(${rx}px, ${ry}px) scale(0.85)`;
+                spawnParticles(e.clientX, e.clientY, currentColor);
+            });
+
+            document.addEventListener('mouseup', () => {
+                isClicking = false;
+            });
+
+            document.addEventListener('mouseleave', () => {
+                cursor.style.opacity = '0';
+                ring.style.opacity = '0';
+                label.classList.remove('show');
+            });
+
+            document.addEventListener('mouseenter', () => {
+                cursor.style.opacity = '1';
+                ring.style.opacity = '0.5';
+            });
+
+            // ── Animation loop ──
+            setCursorIcon('default', '#7c5cfc');
+
+            function animate() {
+                // Smooth follow for cursor icon
+                cx += (mx - cx) * 0.25;
+                cy += (my - cy) * 0.25;
+
+                // Slower follow for ring
+                rx += (mx - rx) * 0.12;
+                ry += (my - ry) * 0.12;
+
+                const cursorW = 12;
+                const ringW = parseFloat(ring.style.width || 44) / 2;
+
+                if (!isClicking) {
+                    cursor.style.transform = `translate(${cx - cursorW}px, ${cy - cursorW}px)`;
+                    ring.style.transform = `translate(${rx - ringW}px, ${ry - ringW}px)`;
+                }
+
+                // Label follows cursor
+                label.style.left = (cx + 20) + 'px';
+                label.style.top = (cy + 20) + 'px';
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            // ── Expose for dynamic content ──
+            window._refreshCursorTargets = function () {
+                // No-op — detection is live via elementFromPoint
+            };
+        })();
+    </script>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  Three.js Background (Deferred for performance) -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <script defer>
+        document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('three-canvas');
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1860,491 +2415,154 @@
             window.addEventListener('resize', onResize);
             onResize();
 
-            // ════════════════════════════════════════════════
-            // SCENE BUILDERS — one per page
-            // ════════════════════════════════════════════════
-
-            // ── HOME: Torus Knot + orbital rings + floaters ──
             function buildHome() {
                 const s = new THREE.Scene();
-
-                const knot = new THREE.Mesh(
-                    new THREE.TorusKnotGeometry(3.2, 0.8, 180, 22, 2, 3),
-                    new THREE.MeshBasicMaterial({ color: 0x7c5cfc, wireframe: true, transparent: true, opacity: 0.18 })
-                );
+                const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(3.2, 0.8, 180, 22, 2, 3), new THREE.MeshBasicMaterial({ color: 0x7c5cfc, wireframe: true, transparent: true, opacity: 0.18 }));
                 s.add(knot);
-
                 const rings = [];
                 [[7, 0x22d3ee, Math.PI / 2, 0], [9, 0xa78bfa, Math.PI / 3, Math.PI / 4], [11, 0xf472b6, Math.PI / 6, Math.PI / 3]].forEach(([r, col, rx, ry]) => {
-                    const m = new THREE.Mesh(
-                        new THREE.TorusGeometry(r, 0.035, 2, 140),
-                        new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.45 })
-                    );
+                    const m = new THREE.Mesh(new THREE.TorusGeometry(r, 0.035, 2, 140), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.45 }));
                     m.rotation.x = rx; m.rotation.y = ry; s.add(m); rings.push(m);
                 });
-
                 const floaters = [];
                 for (let i = 0; i < 16; i++) {
-                    const m = new THREE.Mesh(
-                        new THREE.IcosahedronGeometry(Math.random() * .3 + .1, 0),
-                        new THREE.MeshBasicMaterial({ color: [0x7c5cfc, 0x22d3ee, 0xf472b6, 0xa78bfa][i % 4], wireframe: true, transparent: true, opacity: Math.random() * .4 + .2 })
-                    );
+                    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(Math.random() * .3 + .1, 0), new THREE.MeshBasicMaterial({ color: [0x7c5cfc, 0x22d3ee, 0xf472b6, 0xa78bfa][i % 4], wireframe: true, transparent: true, opacity: Math.random() * .4 + .2 }));
                     const θ = Math.random() * Math.PI * 2, φ = Math.acos(Math.random() * 2 - 1), r = 7 + Math.random() * 9;
                     m.position.set(r * Math.sin(φ) * Math.cos(θ), r * Math.sin(φ) * Math.sin(θ), r * Math.cos(φ) - 5);
                     m.userData = { speed: Math.random() * .008 + .003, axis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(), fp: Math.random() * Math.PI * 2, fs: Math.random() * .5 + .3, fa: Math.random() * .4 + .15, by: m.position.y };
                     s.add(m); floaters.push(m);
                 }
-
-                // Particle field
                 const pp = new Float32Array(300 * 3);
                 for (let i = 0; i < 300; i++) { pp[i * 3] = (Math.random() - .5) * 80; pp[i * 3 + 1] = (Math.random() - .5) * 60; pp[i * 3 + 2] = (Math.random() - .5) * 40 - 10; }
                 const ptGeo = new THREE.BufferGeometry(); ptGeo.setAttribute('position', new THREE.BufferAttribute(pp, 3));
                 const pts = new THREE.Points(ptGeo, new THREE.PointsMaterial({ color: 0xa78bfa, size: .11, transparent: true, opacity: .55 }));
                 s.add(pts);
-
-                return {
-                    scene: s,
-                    tick(t) {
-                        knot.rotation.x = t * .22; knot.rotation.y = t * .18; knot.rotation.z = t * .09;
-                        rings[0].rotation.z = t * .12; rings[1].rotation.z = -t * .09; rings[2].rotation.z = t * .06;
-                        rings[1].rotation.x = Math.PI / 3 + Math.sin(t * .3) * .1;
-                        rings[2].rotation.y = Math.PI / 3 + Math.cos(t * .2) * .08;
-                        floaters.forEach(f => { f.rotateOnAxis(f.userData.axis, f.userData.speed); f.position.y = f.userData.by + Math.sin(t * f.userData.fs + f.userData.fp) * f.userData.fa; });
-                        pts.rotation.y = t * .015; pts.rotation.x = t * .008;
-                    }
-                };
+                return { scene: s, tick(t) { knot.rotation.x = t * .22; knot.rotation.y = t * .18; knot.rotation.z = t * .09; rings[0].rotation.z = t * .12; rings[1].rotation.z = -t * .09; rings[2].rotation.z = t * .06; rings[1].rotation.x = Math.PI / 3 + Math.sin(t * .3) * .1; rings[2].rotation.y = Math.PI / 3 + Math.cos(t * .2) * .08; floaters.forEach(f => { f.rotateOnAxis(f.userData.axis, f.userData.speed); f.position.y = f.userData.by + Math.sin(t * f.userData.fs + f.userData.fp) * f.userData.fa; }); pts.rotation.y = t * .015; pts.rotation.x = t * .008; } };
             }
 
-            // ── ABOUT: Slow DNA double helix ──
             function buildAbout() {
                 const s = new THREE.Scene();
                 const strand1 = [], strand2 = [], rungs = [];
-                const N = 60, R = 4, pitch = 0.38;
-
+                const N = 60, R = 4;
                 for (let i = 0; i < N; i++) {
-                    const a = i / N * Math.PI * 6;
-                    const y = (i / N - 0.5) * 30;
-                    // strand A
-                    const gA = new THREE.SphereGeometry(.18, 8, 8);
-                    const mA = new THREE.MeshBasicMaterial({ color: 0x7c5cfc, transparent: true, opacity: .7 });
-                    const sA = new THREE.Mesh(gA, mA);
-                    sA.position.set(R * Math.cos(a), y, R * Math.sin(a));
-                    s.add(sA); strand1.push({ mesh: sA, a, y });
-
-                    // strand B (offset π)
-                    const gB = new THREE.SphereGeometry(.18, 8, 8);
-                    const mB = new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: .7 });
-                    const sB = new THREE.Mesh(gB, mB);
-                    sB.position.set(R * Math.cos(a + Math.PI), y, R * Math.sin(a + Math.PI));
-                    s.add(sB); strand2.push({ mesh: sB, a, y });
-
-                    // rung every 4
-                    if (i % 4 === 0) {
-                        const rungGeo = new THREE.CylinderGeometry(.04, .04, R * 2, 6);
-                        const rungMat = new THREE.MeshBasicMaterial({ color: 0xf472b6, transparent: true, opacity: .3 });
-                        const rung = new THREE.Mesh(rungGeo, rungMat);
-                        rung.position.set(0, y, 0);
-                        // point from sA to sB
-                        const dir = new THREE.Vector3(Math.cos(a + Math.PI) - Math.cos(a), 0, Math.sin(a + Math.PI) - Math.sin(a)).normalize();
-                        rung.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(Math.cos(a), 0, Math.sin(a)));
-                        rung.rotation.x = Math.PI / 2;
-                        rung.userData = { a, y };
-                        s.add(rung); rungs.push(rung);
-                    }
+                    const a = i / N * Math.PI * 6; const y = (i / N - 0.5) * 30;
+                    const sA = new THREE.Mesh(new THREE.SphereGeometry(.18, 8, 8), new THREE.MeshBasicMaterial({ color: 0x7c5cfc, transparent: true, opacity: .7 }));
+                    sA.position.set(R * Math.cos(a), y, R * Math.sin(a)); s.add(sA); strand1.push({ mesh: sA, a, y });
+                    const sB = new THREE.Mesh(new THREE.SphereGeometry(.18, 8, 8), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: .7 }));
+                    sB.position.set(R * Math.cos(a + Math.PI), y, R * Math.sin(a + Math.PI)); s.add(sB); strand2.push({ mesh: sB, a, y });
+                    if (i % 4 === 0) { const rung = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, R * 2, 6), new THREE.MeshBasicMaterial({ color: 0xf472b6, transparent: true, opacity: .3 })); rung.position.set(0, y, 0); rung.rotation.x = Math.PI / 2; rung.userData = { a, y }; s.add(rung); rungs.push(rung); }
                 }
-
-                // Ambient floating dust
                 const dp = new Float32Array(200 * 3);
                 for (let i = 0; i < 200; i++) { dp[i * 3] = (Math.random() - .5) * 40; dp[i * 3 + 1] = (Math.random() - .5) * 40; dp[i * 3 + 2] = (Math.random() - .5) * 20 - 5; }
                 const dGeo = new THREE.BufferGeometry(); dGeo.setAttribute('position', new THREE.BufferAttribute(dp, 3));
-                const dust = new THREE.Points(dGeo, new THREE.PointsMaterial({ color: 0xa78bfa, size: .08, transparent: true, opacity: .4 }));
-                s.add(dust);
-
-                const group = new THREE.Group();
-                strand1.forEach(o => group.add(o.mesh));
-                strand2.forEach(o => group.add(o.mesh));
-                rungs.forEach(r => group.add(r));
-                // remove individual adds and re-add via group
-                s.clear();
-                strand1.forEach(o => s.add(o.mesh));
-                strand2.forEach(o => s.add(o.mesh));
-                rungs.forEach(r => s.add(r));
-                s.add(dust);
-
-                return {
-                    scene: s,
-                    tick(t) {
-                        const speed = 0.004;
-                        strand1.forEach((o, i) => {
-                            const a = o.a + t * speed * 2;
-                            o.mesh.position.x = R * Math.cos(a);
-                            o.mesh.position.z = R * Math.sin(a);
-                        });
-                        strand2.forEach((o, i) => {
-                            const a = o.a + t * speed * 2;
-                            o.mesh.position.x = R * Math.cos(a + Math.PI);
-                            o.mesh.position.z = R * Math.sin(a + Math.PI);
-                        });
-                        rungs.forEach((r, i) => {
-                            const a = r.userData.a + t * speed * 2;
-                            r.rotation.y = a;
-                        });
-                        dust.rotation.y = t * .005; dust.rotation.z = t * .003;
-                    }
-                };
+                const dust = new THREE.Points(dGeo, new THREE.PointsMaterial({ color: 0xa78bfa, size: .08, transparent: true, opacity: .4 })); s.add(dust);
+                return { scene: s, tick(t) { strand1.forEach(o => { const a = o.a + t * .008; o.mesh.position.x = R * Math.cos(a); o.mesh.position.z = R * Math.sin(a); }); strand2.forEach(o => { const a = o.a + t * .008; o.mesh.position.x = R * Math.cos(a + Math.PI); o.mesh.position.z = R * Math.sin(a + Math.PI); }); rungs.forEach(r => { r.rotation.y = r.userData.a + t * .008; }); dust.rotation.y = t * .005; dust.rotation.z = t * .003; } };
             }
 
-            // ── PROJECTS: Exploding circuit shards — fast, aggressive ──
             function buildProjects() {
                 const s = new THREE.Scene();
-
-                // Circuit grid floor
-                const gridGeo = new THREE.PlaneGeometry(80, 80, 40, 40);
-                const gridMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee, wireframe: true, transparent: true, opacity: 0.07 });
-                const grid = new THREE.Mesh(gridGeo, gridMat);
+                const grid = new THREE.Mesh(new THREE.PlaneGeometry(80, 80, 40, 40), new THREE.MeshBasicMaterial({ color: 0x22d3ee, wireframe: true, transparent: true, opacity: 0.07 }));
                 grid.rotation.x = -Math.PI / 2.2; grid.position.set(0, -12, -5); s.add(grid);
-
-                // Flying shards
                 const shards = [];
                 for (let i = 0; i < 22; i++) {
-                    const shapes = [
-                        new THREE.TetrahedronGeometry(Math.random() * .8 + .3, 0),
-                        new THREE.OctahedronGeometry(Math.random() * .6 + .2, 0),
-                        new THREE.BoxGeometry(.3 + Math.random() * .6, .3 + Math.random() * .6, .3 + Math.random() * .6)
-                    ];
-                    const geo = shapes[i % 3];
-                    const col = [0x22d3ee, 0x7c5cfc, 0xf472b6, 0xfbbf24][i % 4];
-                    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: col, wireframe: true, transparent: true, opacity: Math.random() * .5 + .3 }));
-                    const spread = 18;
-                    m.position.set((Math.random() - .5) * spread, (Math.random() - .5) * spread, (Math.random() - .5) * 10 - 5);
-                    m.userData = {
-                        rx: Math.random() * .04 - .02, ry: Math.random() * .05 - .025, rz: Math.random() * .03 - .015,
-                        ox: m.position.x, oy: m.position.y,
-                        phase: Math.random() * Math.PI * 2, amp: Math.random() * .8 + .3, freq: Math.random() * .6 + .4
-                    };
+                    const shapes = [new THREE.TetrahedronGeometry(Math.random() * .8 + .3, 0), new THREE.OctahedronGeometry(Math.random() * .6 + .2, 0), new THREE.BoxGeometry(.3 + Math.random() * .6, .3 + Math.random() * .6, .3 + Math.random() * .6)];
+                    const m = new THREE.Mesh(shapes[i % 3], new THREE.MeshBasicMaterial({ color: [0x22d3ee, 0x7c5cfc, 0xf472b6, 0xfbbf24][i % 4], wireframe: true, transparent: true, opacity: Math.random() * .5 + .3 }));
+                    m.position.set((Math.random() - .5) * 18, (Math.random() - .5) * 18, (Math.random() - .5) * 10 - 5);
+                    m.userData = { rx: Math.random() * .04 - .02, ry: Math.random() * .05 - .025, rz: Math.random() * .03 - .015, oy: m.position.y, phase: Math.random() * Math.PI * 2, amp: Math.random() * .8 + .3, freq: Math.random() * .6 + .4 };
                     s.add(m); shards.push(m);
                 }
-
-                // Horizontal scan line
-                const scanGeo = new THREE.PlaneGeometry(50, .02, 1, 1);
-                const scanMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: .4, side: THREE.DoubleSide });
-                const scan = new THREE.Mesh(scanGeo, scanMat); s.add(scan);
-
-                // Particle burst ring
+                const scan = new THREE.Mesh(new THREE.PlaneGeometry(50, .02, 1, 1), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: .4, side: THREE.DoubleSide })); s.add(scan);
                 const rp = new Float32Array(180 * 3);
                 for (let i = 0; i < 180; i++) { const a = i / 180 * Math.PI * 2, r = 8 + Math.random() * 5; rp[i * 3] = r * Math.cos(a); rp[i * 3 + 1] = (Math.random() - .5) * 16; rp[i * 3 + 2] = r * Math.sin(a) - 5; }
                 const rpGeo = new THREE.BufferGeometry(); rpGeo.setAttribute('position', new THREE.BufferAttribute(rp, 3));
-                const ring = new THREE.Points(rpGeo, new THREE.PointsMaterial({ color: 0x22d3ee, size: .14, transparent: true, opacity: .6 }));
-                s.add(ring);
-
-                return {
-                    scene: s,
-                    tick(t) {
-                        // Grid ripple
-                        const pos = grid.geometry.attributes.position;
-                        for (let i = 0; i < pos.count; i++) {
-                            const x = pos.getX(i), z = pos.getZ(i);
-                            pos.setZ(i, Math.sin(x * .3 + t * 1.5) * .6 + Math.cos(z * .2 + t * 1.2) * .4);
-                        }
-                        pos.needsUpdate = true;
-                        // Fast shard spin
-                        shards.forEach(sh => {
-                            sh.rotation.x += sh.userData.rx;
-                            sh.rotation.y += sh.userData.ry;
-                            sh.rotation.z += sh.userData.rz;
-                            sh.position.y = sh.userData.oy + Math.sin(t * sh.userData.freq + sh.userData.phase) * sh.userData.amp;
-                        });
-                        // Scan sweep
-                        scan.position.y = Math.sin(t * .8) * 10;
-                        ring.rotation.y = t * .08; ring.rotation.x = t * .03;
-                    }
-                };
+                const ringPts = new THREE.Points(rpGeo, new THREE.PointsMaterial({ color: 0x22d3ee, size: .14, transparent: true, opacity: .6 })); s.add(ringPts);
+                return { scene: s, tick(t) { const pos = grid.geometry.attributes.position; for (let i = 0; i < pos.count; i++) { const x = pos.getX(i); pos.setZ(i, Math.sin(x * .3 + t * 1.5) * .6 + Math.cos(pos.getY(i) * .2 + t * 1.2) * .4); } pos.needsUpdate = true; shards.forEach(sh => { sh.rotation.x += sh.userData.rx; sh.rotation.y += sh.userData.ry; sh.rotation.z += sh.userData.rz; sh.position.y = sh.userData.oy + Math.sin(t * sh.userData.freq + sh.userData.phase) * sh.userData.amp; }); scan.position.y = Math.sin(t * .8) * 10; ringPts.rotation.y = t * .08; ringPts.rotation.x = t * .03; } };
             }
 
-            // ── PHOTOGRAPHY: Soft bokeh orbs — dreamy, slow ──
             function buildPhotography() {
                 const s = new THREE.Scene();
-                const orbs = [];
-                const cols = [0xf472b6, 0xfbbf24, 0xa78bfa, 0xf9a8d4, 0xfde68a, 0xc4b5fd];
-
+                const orbs = []; const cols = [0xf472b6, 0xfbbf24, 0xa78bfa, 0xf9a8d4, 0xfde68a, 0xc4b5fd];
                 for (let i = 0; i < 28; i++) {
-                    const r = Math.random() * .9 + .4;
-                    const m = new THREE.Mesh(
-                        new THREE.SphereGeometry(r, 16, 16),
-                        new THREE.MeshBasicMaterial({ color: cols[i % cols.length], transparent: true, opacity: Math.random() * .12 + .04, side: THREE.FrontSide })
-                    );
+                    const m = new THREE.Mesh(new THREE.SphereGeometry(Math.random() * .9 + .4, 16, 16), new THREE.MeshBasicMaterial({ color: cols[i % cols.length], transparent: true, opacity: Math.random() * .12 + .04 }));
                     m.position.set((Math.random() - .5) * 36, (Math.random() - .5) * 28, (Math.random() - .5) * 16 - 6);
                     m.userData = { floatSpeed: Math.random() * .25 + .08, floatAmp: Math.random() * 1.5 + .5, phase: Math.random() * Math.PI * 2, driftX: Math.random() * .003 - .0015, by: m.position.y, bx: m.position.x };
                     s.add(m); orbs.push(m);
                 }
-
-                // Inner bright cores
                 for (let i = 0; i < 12; i++) {
-                    const m = new THREE.Mesh(
-                        new THREE.SphereGeometry(Math.random() * .2 + .05, 8, 8),
-                        new THREE.MeshBasicMaterial({ color: cols[i % cols.length], transparent: true, opacity: .8 })
-                    );
+                    const m = new THREE.Mesh(new THREE.SphereGeometry(Math.random() * .2 + .05, 8, 8), new THREE.MeshBasicMaterial({ color: cols[i % cols.length], transparent: true, opacity: .8 }));
                     m.position.set((Math.random() - .5) * 30, (Math.random() - .5) * 24, -5 + Math.random() * 4);
-                    m.userData = { fs: Math.random() * .3 + .1, fa: Math.random() * 2 + .5, p: Math.random() * Math.PI * 2, by: m.position.y };
+                    m.userData = { floatSpeed: Math.random() * .3 + .1, floatAmp: Math.random() * 2 + .5, phase: Math.random() * Math.PI * 2, by: m.position.y, bx: m.position.x, driftX: 0 };
                     s.add(m); orbs.push(m);
                 }
-
-                // Sparse dust
                 const dp = new Float32Array(400 * 3);
                 for (let i = 0; i < 400; i++) { dp[i * 3] = (Math.random() - .5) * 60; dp[i * 3 + 1] = (Math.random() - .5) * 50; dp[i * 3 + 2] = (Math.random() - .5) * 20 - 8; }
                 const dGeo = new THREE.BufferGeometry(); dGeo.setAttribute('position', new THREE.BufferAttribute(dp, 3));
-                const dust = new THREE.Points(dGeo, new THREE.PointsMaterial({ color: 0xfde68a, size: .06, transparent: true, opacity: .35 }));
-                s.add(dust);
-
-                return {
-                    scene: s,
-                    tick(t) {
-                        orbs.forEach(o => {
-                            o.position.y = o.userData.by + Math.sin(t * o.userData.floatSpeed + o.userData.phase) * o.userData.floatAmp;
-                            o.position.x = o.userData.bx + Math.cos(t * (o.userData.driftX || .001) * 200) * 0.5;
-                        });
-                        dust.rotation.z = t * .004; dust.rotation.y = t * .002;
-                    }
-                };
+                const dust = new THREE.Points(dGeo, new THREE.PointsMaterial({ color: 0xfde68a, size: .06, transparent: true, opacity: .35 })); s.add(dust);
+                return { scene: s, tick(t) { orbs.forEach(o => { o.position.y = o.userData.by + Math.sin(t * o.userData.floatSpeed + o.userData.phase) * o.userData.floatAmp; o.position.x = o.userData.bx + Math.cos(t * (o.userData.driftX || .001) * 200) * 0.5; }); dust.rotation.z = t * .004; dust.rotation.y = t * .002; } };
             }
 
-            // ── RESUME: Data streams flowing upward ──
             function buildResume() {
                 const s = new THREE.Scene();
-
-                // Vertical data stream particles — rising columns
                 const streams = [];
-                const numCols = 12;
-                for (let c = 0; c < numCols; c++) {
-                    const x = (c / (numCols - 1) - .5) * 32;
+                for (let c = 0; c < 12; c++) {
+                    const x = (c / 11 - .5) * 32;
                     const pArr = new Float32Array(30 * 3);
                     for (let i = 0; i < 30; i++) { pArr[i * 3] = x + (Math.random() - .5) * .4; pArr[i * 3 + 1] = (Math.random() - .5) * 40; pArr[i * 3 + 2] = (Math.random() - .5) * 4 - 8; }
                     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
-                    const m = new THREE.Points(g, new THREE.PointsMaterial({
-                        color: c % 3 === 0 ? 0x7c5cfc : c % 3 === 1 ? 0x22d3ee : 0xa78bfa,
-                        size: .14, transparent: true, opacity: .6
-                    }));
+                    const m = new THREE.Points(g, new THREE.PointsMaterial({ color: c % 3 === 0 ? 0x7c5cfc : c % 3 === 1 ? 0x22d3ee : 0xa78bfa, size: .14, transparent: true, opacity: .6 }));
                     m.userData = { speed: (Math.random() * .015 + .008) * (c % 2 ? 1 : -1) };
                     s.add(m); streams.push(m);
                 }
-
-                // Horizontal timeline lines
-                for (let i = 0; i < 6; i++) {
-                    const geo = new THREE.PlaneGeometry(40, .012, 1, 1);
-                    const mat = new THREE.MeshBasicMaterial({ color: i % 2 ? 0x7c5cfc : 0x22d3ee, transparent: true, opacity: .12, side: THREE.DoubleSide });
-                    const l = new THREE.Mesh(geo, mat);
-                    l.position.set(0, (i - 2.5) * 5, -8);
-                    s.add(l);
-                }
-
-                // Ascending bar-chart-like columns
+                for (let i = 0; i < 6; i++) { const l = new THREE.Mesh(new THREE.PlaneGeometry(40, .012, 1, 1), new THREE.MeshBasicMaterial({ color: i % 2 ? 0x7c5cfc : 0x22d3ee, transparent: true, opacity: .12, side: THREE.DoubleSide })); l.position.set(0, (i - 2.5) * 5, -8); s.add(l); }
                 const bars = [];
-                for (let i = 0; i < 8; i++) {
-                    const h = Math.random() * 8 + 2;
-                    const geo = new THREE.BoxGeometry(.4, h, .4);
-                    const mat = new THREE.MeshBasicMaterial({ color: [0x7c5cfc, 0x22d3ee, 0xa78bfa][i % 3], wireframe: true, transparent: true, opacity: .35 });
-                    const b = new THREE.Mesh(geo, mat);
-                    b.position.set((i - 3.5) * 4, -6 + h / 2, -10);
-                    b.userData = { targetH: h, phase: Math.random() * Math.PI * 2 };
-                    s.add(b); bars.push(b);
-                }
-
-                // Glowing nodes
+                for (let i = 0; i < 8; i++) { const h = Math.random() * 8 + 2; const b = new THREE.Mesh(new THREE.BoxGeometry(.4, h, .4), new THREE.MeshBasicMaterial({ color: [0x7c5cfc, 0x22d3ee, 0xa78bfa][i % 3], wireframe: true, transparent: true, opacity: .35 })); b.position.set((i - 3.5) * 4, -6 + h / 2, -10); b.userData = { phase: Math.random() * Math.PI * 2 }; s.add(b); bars.push(b); }
                 const nodes = [];
-                for (let i = 0; i < 10; i++) {
-                    const m = new THREE.Mesh(
-                        new THREE.SphereGeometry(.18, 8, 8),
-                        new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: .7 })
-                    );
-                    m.position.set((Math.random() - .5) * 30, (Math.random() - .5) * 20, -8);
-                    m.userData = { p: Math.random() * Math.PI * 2, s: Math.random() * .4 + .2, by: m.position.y };
-                    s.add(m); nodes.push(m);
-                }
-
-                return {
-                    scene: s,
-                    tick(t) {
-                        streams.forEach(st => {
-                            const pos = st.geometry.attributes.position;
-                            for (let i = 0; i < pos.count; i++) {
-                                let y = pos.getY(i) + st.userData.speed;
-                                if (y > 20) y = -20; if (y < -20) y = 20;
-                                pos.setY(i, y);
-                            }
-                            pos.needsUpdate = true;
-                        });
-                        bars.forEach(b => {
-                            const scale = 0.7 + Math.sin(t * .6 + b.userData.phase) * 0.3;
-                            b.scale.y = scale;
-                        });
-                        nodes.forEach(n => { n.position.y = n.userData.by + Math.sin(t * n.userData.s + n.userData.p) * .8; });
-                    }
-                };
+                for (let i = 0; i < 10; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(.18, 8, 8), new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: .7 })); m.position.set((Math.random() - .5) * 30, (Math.random() - .5) * 20, -8); m.userData = { p: Math.random() * Math.PI * 2, s: Math.random() * .4 + .2, by: m.position.y }; s.add(m); nodes.push(m); }
+                return { scene: s, tick(t) { streams.forEach(st => { const pos = st.geometry.attributes.position; for (let i = 0; i < pos.count; i++) { let y = pos.getY(i) + st.userData.speed; if (y > 20) y = -20; if (y < -20) y = 20; pos.setY(i, y); } pos.needsUpdate = true; }); bars.forEach(b => { b.scale.y = 0.7 + Math.sin(t * .6 + b.userData.phase) * 0.3; }); nodes.forEach(n => { n.position.y = n.userData.by + Math.sin(t * n.userData.s + n.userData.p) * .8; }); } };
             }
 
-            // ── CONTACT: Ocean wave mesh + signal pulses ──
             function buildContact() {
                 const s = new THREE.Scene();
-
-                // Rippling wave plane
-                const wGeo = new THREE.PlaneGeometry(70, 70, 45, 45);
-                const wMat = new THREE.MeshBasicMaterial({ color: 0x7c5cfc, wireframe: true, transparent: true, opacity: .09 });
-                const wave = new THREE.Mesh(wGeo, wMat);
+                const wave = new THREE.Mesh(new THREE.PlaneGeometry(70, 70, 45, 45), new THREE.MeshBasicMaterial({ color: 0x7c5cfc, wireframe: true, transparent: true, opacity: .09 }));
                 wave.rotation.x = -Math.PI / 3; wave.position.set(0, -8, -6); s.add(wave);
-
-                // Second wave layer offset
-                const wGeo2 = new THREE.PlaneGeometry(70, 70, 35, 35);
-                const wMat2 = new THREE.MeshBasicMaterial({ color: 0x22d3ee, wireframe: true, transparent: true, opacity: .05 });
-                const wave2 = new THREE.Mesh(wGeo2, wMat2);
+                const wave2 = new THREE.Mesh(new THREE.PlaneGeometry(70, 70, 35, 35), new THREE.MeshBasicMaterial({ color: 0x22d3ee, wireframe: true, transparent: true, opacity: .05 }));
                 wave2.rotation.x = -Math.PI / 3; wave2.position.set(0, -10, -8); s.add(wave2);
-
-                // Signal pulse rings (expanding tori)
                 const pulses = [];
-                for (let i = 0; i < 4; i++) {
-                    const m = new THREE.Mesh(
-                        new THREE.TorusGeometry(1, .03, 2, 80),
-                        new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: .7 })
-                    );
-                    m.rotation.x = Math.PI / 2;
-                    m.position.set(0, 0, -5);
-                    m.userData = { phase: i * Math.PI * .5, speed: 1.2 };
-                    s.add(m); pulses.push(m);
-                }
-
-                // Floating connection nodes
+                for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(new THREE.TorusGeometry(1, .03, 2, 80), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: .7 })); m.rotation.x = Math.PI / 2; m.position.set(0, 0, -5); m.userData = { phase: i * Math.PI * .5 }; s.add(m); pulses.push(m); }
                 const cnodes = [];
-                for (let i = 0; i < 14; i++) {
-                    const m = new THREE.Mesh(
-                        new THREE.SphereGeometry(.12, 8, 8),
-                        new THREE.MeshBasicMaterial({ color: i % 2 ? 0xa78bfa : 0xf472b6, transparent: true, opacity: .65 })
-                    );
-                    const a = i / 14 * Math.PI * 2, r = 6 + Math.random() * 5;
-                    m.position.set(r * Math.cos(a), (Math.random() - .5) * 8, r * Math.sin(a) - 8);
-                    m.userData = { p: Math.random() * Math.PI * 2, s: Math.random() * .3 + .15, r, a, by: m.position.y };
-                    s.add(m); cnodes.push(m);
-                }
-
-                // Comms particles orbiting
+                for (let i = 0; i < 14; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(.12, 8, 8), new THREE.MeshBasicMaterial({ color: i % 2 ? 0xa78bfa : 0xf472b6, transparent: true, opacity: .65 })); const a = i / 14 * Math.PI * 2, r = 6 + Math.random() * 5; m.position.set(r * Math.cos(a), (Math.random() - .5) * 8, r * Math.sin(a) - 8); m.userData = { p: Math.random() * Math.PI * 2, s: Math.random() * .3 + .15, by: m.position.y }; s.add(m); cnodes.push(m); }
                 const cp = new Float32Array(250 * 3);
                 for (let i = 0; i < 250; i++) { const a = Math.random() * Math.PI * 2, r = 4 + Math.random() * 12; cp[i * 3] = r * Math.cos(a); cp[i * 3 + 1] = (Math.random() - .5) * 20; cp[i * 3 + 2] = r * Math.sin(a) - 8; }
                 const cpGeo = new THREE.BufferGeometry(); cpGeo.setAttribute('position', new THREE.BufferAttribute(cp, 3));
-                const cpts = new THREE.Points(cpGeo, new THREE.PointsMaterial({ color: 0xa78bfa, size: .1, transparent: true, opacity: .5 }));
-                s.add(cpts);
-
-                return {
-                    scene: s,
-                    tick(t) {
-                        // Two-layer wave
-                        const p1 = wave.geometry.attributes.position;
-                        for (let i = 0; i < p1.count; i++) {
-                            const x = p1.getX(i), y = p1.getY(i);
-                            p1.setZ(i, Math.sin(x * .15 + t * .7) * .9 + Math.cos(y * .12 + t * .5) * .7);
-                        }
-                        p1.needsUpdate = true;
-                        const p2 = wave2.geometry.attributes.position;
-                        for (let i = 0; i < p2.count; i++) {
-                            const x = p2.getX(i), y = p2.getY(i);
-                            p2.setZ(i, Math.sin(x * .12 + t * .5 + 1) * .7 + Math.cos(y * .1 + t * .4 + 2) * .5);
-                        }
-                        p2.needsUpdate = true;
-                        // Expanding pulse rings
-                        pulses.forEach(p => {
-                            const sc = 1 + ((t * .4 + p.userData.phase) % (Math.PI * 2)) / (Math.PI * 2) * 7;
-                            p.scale.set(sc, sc, sc);
-                            p.material.opacity = Math.max(0, .7 - (sc - 1) / 7 * .7);
-                        });
-                        cnodes.forEach(n => { n.position.y = n.userData.by + Math.sin(t * n.userData.s + n.userData.p) * .6; });
-                        cpts.rotation.y = t * .02;
-                    }
-                };
+                const cpts = new THREE.Points(cpGeo, new THREE.PointsMaterial({ color: 0xa78bfa, size: .1, transparent: true, opacity: .5 })); s.add(cpts);
+                return { scene: s, tick(t) { const p1 = wave.geometry.attributes.position; for (let i = 0; i < p1.count; i++) { p1.setZ(i, Math.sin(p1.getX(i) * .15 + t * .7) * .9 + Math.cos(p1.getY(i) * .12 + t * .5) * .7); } p1.needsUpdate = true; const p2 = wave2.geometry.attributes.position; for (let i = 0; i < p2.count; i++) { p2.setZ(i, Math.sin(p2.getX(i) * .12 + t * .5 + 1) * .7 + Math.cos(p2.getY(i) * .1 + t * .4 + 2) * .5); } p2.needsUpdate = true; pulses.forEach(p => { const sc = 1 + ((t * .4 + p.userData.phase) % (Math.PI * 2)) / (Math.PI * 2) * 7; p.scale.set(sc, sc, sc); p.material.opacity = Math.max(0, .7 - (sc - 1) / 7 * .7); }); cnodes.forEach(n => { n.position.y = n.userData.by + Math.sin(t * n.userData.s + n.userData.p) * .6; }); cpts.rotation.y = t * .02; } };
             }
 
-            // ════════════════════════════════════════════════
-            // SCENE MANAGER
-            // ════════════════════════════════════════════════
-            const scenes = {
-                home: null,
-                about: null,
-                portfolio: null,
-                photography: null,
-                resume: null,
-                contact: null,
-            };
-            const builders = {
-                home: buildHome,
-                about: buildAbout,
-                portfolio: buildProjects,
-                photography: buildPhotography,
-                resume: buildResume,
-                contact: buildContact,
-            };
+            const scenes = {}; const builders = { home: buildHome, about: buildAbout, portfolio: buildProjects, photography: buildPhotography, resume: buildResume, contact: buildContact };
+            let activePage = 'home', currentScene = null;
+            const camPos = { home: [0, 0, 22], about: [0, 0, 26], portfolio: [0, 0, 24], photography: [0, 0, 20], resume: [0, 0, 24], contact: [0, 0, 20] };
 
-            let activePage = 'home';
-            let currentScene = null;
-
-            // Camera positions per page
-            const camPos = {
-                home: [0, 0, 22],
-                about: [0, 0, 26],
-                portfolio: [0, 0, 24],
-                photography: [0, 0, 20],
-                resume: [0, 0, 24],
-                contact: [0, 0, 20],
-            };
-
-            function switchScene(page) {
-                if (!scenes[page]) scenes[page] = builders[page]();
-                currentScene = scenes[page];
-                activePage = page;
-                const cp = camPos[page] || [0, 0, 22];
-                camera.position.set(cp[0], cp[1], cp[2]);
-            }
-
-            // Hook into the global go() — patch it after DOM ready
+            function switchScene(page) { if (!scenes[page]) scenes[page] = builders[page](); currentScene = scenes[page]; activePage = page; const cp = camPos[page] || [0, 0, 22]; camera.position.set(cp[0], cp[1], cp[2]); }
             window._sceneSwitch = switchScene;
-
-            // Init home scene
             switchScene('home');
 
-            // Animate loop
             let t = 0;
-            function animate() {
-                requestAnimationFrame(animate);
-                t += 0.01;
-
-                mouse.x += (mouse.tx - mouse.x) * 0.04;
-                mouse.y += (mouse.ty - mouse.y) * 0.04;
-                camera.position.x += (mouse.x * 1.4 - camera.position.x) * 0.06;
-                camera.position.y += (mouse.y * 1.0 - camera.position.y) * 0.06;
-                camera.lookAt(0, 0, 0);
-
-                if (currentScene) {
-                    currentScene.tick(t);
-                    renderer.render(currentScene.scene, camera);
-                }
-            }
+            function animate() { requestAnimationFrame(animate); t += 0.01; mouse.x += (mouse.tx - mouse.x) * 0.04; mouse.y += (mouse.ty - mouse.y) * 0.04; camera.position.x += (mouse.x * 1.4 - camera.position.x) * 0.06; camera.position.y += (mouse.y * 1.0 - camera.position.y) * 0.06; camera.lookAt(0, 0, 0); if (currentScene) { currentScene.tick(t); renderer.render(currentScene.scene, camera); } }
             animate();
-
-            window._threeSetLight = function (isLight) { /* could tint opacity in future */ };
-        })();
+            window._threeSetLight = function () { };
+        });
     </script>
 
-    <!-- ═══════════════ FIREBASE + APP LOGIC (unchanged) ═══════════════ -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  Firebase & App Logic (unchanged from original) -->
+    <!-- ═══════════════════════════════════════════════ -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const IMGBB_API_KEY = "edec5525c40e6d26f0999dd6f3270f5c";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCb_YzlwEWXMpCG1k6c4wcKPwuYvqAB74s",
-            authDomain: "mireashanzaman-portfolio.firebaseapp.com",
-            projectId: "mireashanzaman-portfolio",
-            messagingSenderId: "794227190129",
-            appId: "1:794227190129:web:dfaed5a3c69046eac76ed0"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyCb_YzlwEWXMpCG1k6c4wcKPwuYvqAB74s", authDomain: "mireashanzaman-portfolio.firebaseapp.com", projectId: "mireashanzaman-portfolio", messagingSenderId: "794227190129", appId: "1:794227190129:web:dfaed5a3c69046eac76ed0" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
@@ -2357,20 +2575,13 @@
         onAuthStateChanged(auth, u => { isAdmin = !!u; });
 
         window.handleLogin = async function () {
-            const email = prompt("Admin Email:");
-            const password = prompt("Password:");
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                isAdmin = true; alert("Login Successful!");
-            } catch (e) { alert("Login Failed: " + e.message); isAdmin = false; }
+            const email = prompt("Admin Email:"); const password = prompt("Password:");
+            try { await signInWithEmailAndPassword(auth, email, password); isAdmin = true; alert("Login Successful!"); } catch (e) { alert("Login Failed: " + e.message); isAdmin = false; }
         };
 
         window.saveFieldToCloud = async function (fieldId, value) {
             if (!isAdmin) return;
-            try {
-                const docRef = doc(db, "portfolio", "content");
-                await setDoc(docRef, { [fieldId]: value }, { merge: true });
-            } catch (e) { console.error("Save error:", e); }
+            try { await setDoc(doc(db, "portfolio", "content"), { [fieldId]: value }, { merge: true }); } catch (e) { console.error("Save error:", e); }
         };
 
         async function loadFieldsFromCloud() {
@@ -2378,9 +2589,7 @@
                 const docSnap = await getDoc(doc(db, "portfolio", "content"));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.querySelectorAll('[data-f]').forEach(el => {
-                        if (data[el.dataset.f]) el.innerHTML = data[el.dataset.f];
-                    });
+                    document.querySelectorAll('[data-f]').forEach(el => { if (data[el.dataset.f]) el.innerHTML = data[el.dataset.f]; });
                     if (data.pf_pic) showProfilePic(data.pf_pic);
                     if (data.cloud_proj) projects = JSON.parse(data.cloud_proj);
                     if (data.cloud_certs) certs = JSON.parse(data.cloud_certs);
@@ -2397,11 +2606,9 @@
         window.go = function (page) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('[data-p]').forEach(b => b.classList.remove('active'));
-            const el = document.getElementById('page-' + page);
-            if (el) el.classList.add('active');
+            const el = document.getElementById('page-' + page); if (el) el.classList.add('active');
             document.querySelectorAll(`[data-p="${page}"]`).forEach(b => b.classList.add('active'));
-            window.scrollTo(0, 0);
-            document.getElementById('mob').classList.remove('open');
+            window.scrollTo(0, 0); document.getElementById('mob').classList.remove('open');
             if (window._sceneSwitch) window._sceneSwitch(page);
         };
 
@@ -2416,11 +2623,7 @@
             document.querySelectorAll('[data-f]').forEach(el => { el.contentEditable = editing ? 'true' : 'false'; });
             document.getElementById('con-edit').style.display = editing ? 'flex' : 'none';
             document.getElementById('res-btn').style.display = editing ? 'block' : 'none';
-            if (editing) {
-                document.getElementById('cein-gh').value = window.currentContact.gh || '';
-                document.getElementById('cein-li').value = window.currentContact.li || '';
-                document.getElementById('cein-em').value = window.currentContact.em || '';
-            }
+            if (editing) { document.getElementById('cein-gh').value = window.currentContact.gh || ''; document.getElementById('cein-li').value = window.currentContact.li || ''; document.getElementById('cein-em').value = window.currentContact.em || ''; }
             renderProjects(); renderPhotos(); renderCerts(); renderCV();
         };
 
@@ -2432,39 +2635,25 @@
         }
 
         window.handleCV = async function (e) {
-            const f = e.target.files[0];
-            if (!f || f.type !== 'application/pdf') { alert("Please upload a PDF."); return; }
+            const f = e.target.files[0]; if (!f || f.type !== 'application/pdf') { alert("Please upload a PDF."); return; }
             const r = new FileReader();
-            r.onload = async ev => {
-                await window.saveFieldToCloud('cloud_cv', ev.target.result);
-                localStorage.setItem('pf_cv', ev.target.result);
-                renderCV();
-            };
+            r.onload = async ev => { await window.saveFieldToCloud('cloud_cv', ev.target.result); localStorage.setItem('pf_cv', ev.target.result); renderCV(); };
             r.readAsDataURL(f);
         };
 
         function renderCV() {
             const area = document.getElementById('cv-act'); if (!area) return;
             const cv = localStorage.getItem('pf_cv');
-            if (editing) {
-                area.innerHTML = `<button class="btn btn-o btn-s" onclick="document.getElementById('cv-up').click()">Upload PDF</button>`;
-            } else if (cv) {
-                area.innerHTML = `<a href="${cv}" download="Resume.pdf" class="btn btn-p btn-s">Download CV</a>`;
-            } else {
-                area.innerHTML = `<button class="btn btn-o btn-s" disabled>No CV uploaded</button>`;
-            }
+            if (editing) { area.innerHTML = `<button class="btn btn-o btn-s" onclick="document.getElementById('cv-up').click()" data-cursor="upload" data-cursor-icon="upload" data-cursor-color="#a855f7">Upload PDF</button>`; }
+            else if (cv) { area.innerHTML = `<a href="${cv}" download="Resume.pdf" class="btn btn-p btn-s" data-cursor="download" data-cursor-icon="download" data-cursor-color="#22d3ee">Download CV</a>`; }
+            else { area.innerHTML = `<button class="btn btn-o btn-s" disabled>No CV uploaded</button>`; }
         }
 
         window.saveContactLinks = async function () {
-            const gh = document.getElementById('cein-gh').value;
-            const li = document.getElementById('cein-li').value;
-            const em = document.getElementById('cein-em').value;
+            const gh = document.getElementById('cein-gh').value; const li = document.getElementById('cein-li').value; const em = document.getElementById('cein-em').value;
             window.currentContact = { gh, li, em };
-            await window.saveFieldToCloud('contact_gh', gh);
-            await window.saveFieldToCloud('contact_li', li);
-            await window.saveFieldToCloud('contact_em', em);
-            loadContactLinks();
-            alert("Contact links saved to Cloud!");
+            await window.saveFieldToCloud('contact_gh', gh); await window.saveFieldToCloud('contact_li', li); await window.saveFieldToCloud('contact_em', em);
+            loadContactLinks(); alert("Contact links saved to Cloud!");
         };
 
         function loadContactLinks() {
@@ -2478,52 +2667,22 @@
         }
 
         window.sendForm = function () {
-            const name = document.getElementById('fn').value;
-            const email = document.getElementById('fe').value;
-            const msg = document.getElementById('fm').value;
+            const name = document.getElementById('fn').value; const email = document.getElementById('fe').value; const msg = document.getElementById('fm').value;
             if (!name || !email || !msg) { alert("Please fill out all fields."); return; }
             const to = window.currentContact.em || "mireashan@example.com";
-            const subject = encodeURIComponent("Portfolio Message from " + name);
-            const body = encodeURIComponent(msg + "\n\nReply to: " + email);
-            window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-            const fok = document.getElementById('fok');
-            fok.style.display = 'block';
-            setTimeout(() => {
-                fok.style.display = 'none';
-                document.getElementById('fn').value = '';
-                document.getElementById('fe').value = '';
-                document.getElementById('fm').value = '';
-            }, 3000);
+            window.location.href = `mailto:${to}?subject=${encodeURIComponent("Portfolio Message from " + name)}&body=${encodeURIComponent(msg + "\n\nReply to: " + email)}`;
+            const fok = document.getElementById('fok'); fok.style.display = 'block';
+            setTimeout(() => { fok.style.display = 'none'; document.getElementById('fn').value = ''; document.getElementById('fe').value = ''; document.getElementById('fm').value = ''; }, 3000);
         };
 
         window.triggerPhotoUp = function () { if (editing) document.getElementById('pup').click(); };
 
         async function compressImage(file) {
             let blob = file;
-            if (file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic') {
-                try {
-                    const c = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.7 });
-                    blob = Array.isArray(c) ? c[0] : c;
-                } catch (e) { return null; }
-            }
+            if (file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic') { try { const c = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.7 }); blob = Array.isArray(c) ? c[0] : c; } catch (e) { return null; } }
             return new Promise(resolve => {
-                const reader = new FileReader();
-                reader.readAsDataURL(blob);
-                reader.onload = ev => {
-                    const img = new Image();
-                    img.src = ev.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
-                        const MAX = 800;
-                        if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
-                        else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6));
-                    };
-                    img.onerror = () => resolve(null);
-                };
+                const reader = new FileReader(); reader.readAsDataURL(blob);
+                reader.onload = ev => { const img = new Image(); img.src = ev.target.result; img.onload = () => { const canvas = document.createElement('canvas'); let w = img.width, h = img.height; const MAX = 800; if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } } else { if (h > MAX) { w = w * MAX / h; h = MAX; } } canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h); resolve(canvas.toDataURL('image/jpeg', 0.6)); }; img.onerror = () => resolve(null); };
                 reader.onerror = () => resolve(null);
             });
         }
@@ -2531,21 +2690,11 @@
         window.handleProfilePic = async function (e) {
             const f = e.target.files[0]; if (!f) return;
             const compressed = await compressImage(f); if (!compressed) return;
-            const formData = new FormData();
-            formData.append("image", compressed.split(',')[1]);
-            try {
-                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
-                const data = await res.json();
-                if (data.success) { await window.saveFieldToCloud('pf_pic', data.data.url); showProfilePic(data.data.url); }
-                else throw new Error("ImgBB failed");
-            } catch { alert("Failed to upload profile picture."); }
+            const formData = new FormData(); formData.append("image", compressed.split(',')[1]);
+            try { const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData }); const data = await res.json(); if (data.success) { await window.saveFieldToCloud('pf_pic', data.data.url); showProfilePic(data.data.url); } else throw new Error("ImgBB failed"); } catch { alert("Failed to upload profile picture."); }
         };
 
-        function showProfilePic(src) {
-            const img = document.getElementById('pimg');
-            img.src = src; img.classList.add('show');
-            const ph = document.getElementById('pph'); if (ph) ph.style.display = 'none';
-        }
+        function showProfilePic(src) { const img = document.getElementById('pimg'); img.src = src; img.classList.add('show'); const ph = document.getElementById('pph'); if (ph) ph.style.display = 'none'; }
 
         window.addProj = async function () {
             const name = prompt('Project name:'); if (!name) return;
@@ -2554,198 +2703,109 @@
             const stack = (prompt('Stack (comma separated):') || '').split(',').map(s => s.trim()).filter(Boolean);
             const link = prompt('Project Link (URL):') || '#';
             projects.push({ id: 'p' + Date.now(), cat, name, desc, stack, link });
-            await window.saveFieldToCloud('cloud_proj', JSON.stringify(projects));
-            renderProjects();
+            await window.saveFieldToCloud('cloud_proj', JSON.stringify(projects)); renderProjects();
         };
 
         window.delProj = async function (id) {
             if (!confirm('Delete this project?')) return;
             projects = projects.filter(p => p.id !== id);
-            await window.saveFieldToCloud('cloud_proj', JSON.stringify(projects));
-            renderProjects();
+            await window.saveFieldToCloud('cloud_proj', JSON.stringify(projects)); renderProjects();
         };
 
         function renderProjects() {
-            const g = document.getElementById('proj-grid'); if (!g) return;
-            g.innerHTML = '';
+            const g = document.getElementById('proj-grid'); if (!g) return; g.innerHTML = '';
             projects.forEach(p => {
                 if (pFilter !== 'all' && p.cat !== pFilter) return;
-                const d = document.createElement('div');
-                d.className = 'proj-card';
-                const linkBtn = (p.link && p.link !== '#')
-                    ? `<a href="${p.link}" target="_blank" class="btn btn-p btn-s" style="margin-top:10px;justify-content:center;">→ Play</a>` : '';
+                const d = document.createElement('div'); d.className = 'proj-card';
+                d.setAttribute('data-cursor', 'project'); d.setAttribute('data-cursor-icon', 'project'); d.setAttribute('data-cursor-color', p.cat === 'game' ? '#f472b6' : '#a855f7');
+                const linkBtn = (p.link && p.link !== '#') ? `<a href="${p.link}" target="_blank" class="btn btn-p btn-s" style="margin-top:10px;justify-content:center;" data-cursor="play" data-cursor-icon="play" data-cursor-color="#22d3ee">→ Play</a>` : '';
                 const stack = Array.isArray(p.stack) ? p.stack : [];
-                d.innerHTML = `
-          <div>
-            <div class="proj-cat">${p.cat === 'game' ? '// GAME' : '// MANAGEMENT SYSTEM'}</div>
-            <div class="proj-name">${p.name}</div>
-            <div class="proj-desc">${p.desc || ''}</div>
-            <div class="proj-stack">${stack.map(s => `<span class="stag">${s}</span>`).join('')}</div>
-          </div>
-          <div>
-            ${linkBtn}
-            ${editing ? `<div style="margin-top:12px;display:flex;justify-content:flex-end;"><button class="btn-d" onclick="delProj('${p.id}')">Delete</button></div>` : ''}
-          </div>`;
+                d.innerHTML = `<div><div class="proj-cat">${p.cat === 'game' ? '// GAME' : '// MANAGEMENT SYSTEM'}</div><div class="proj-name">${p.name}</div><div class="proj-desc">${p.desc || ''}</div><div class="proj-stack">${stack.map(s => `<span class="stag">${s}</span>`).join('')}</div></div><div>${linkBtn}${editing ? `<div style="margin-top:12px;display:flex;justify-content:flex-end;"><button class="btn-d" onclick="delProj('${p.id}')" data-cursor="delete" data-cursor-icon="trash" data-cursor-color="#ef4444">Delete</button></div>` : ''}</div>`;
                 g.appendChild(d);
             });
-            if (editing) {
-                const ac = document.createElement('div');
-                ac.className = 'add-card';
-                ac.innerHTML = '+ Add Project';
-                ac.onclick = window.addProj;
-                g.appendChild(ac);
-            }
+            if (editing) { const ac = document.createElement('div'); ac.className = 'add-card'; ac.innerHTML = '+ Add Project'; ac.setAttribute('data-cursor', 'add'); ac.setAttribute('data-cursor-icon', 'plus-circle'); ac.setAttribute('data-cursor-color', '#22c55e'); ac.onclick = window.addProj; g.appendChild(ac); }
         }
 
-        window.filterP = function (cat, btn) {
-            pFilter = cat;
-            document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
-            btn.classList.add('on');
-            renderProjects();
-        };
+        window.filterP = function (cat, btn) { pFilter = cat; document.querySelectorAll('.tab').forEach(b => b.classList.remove('on')); btn.classList.add('on'); renderProjects(); };
 
         window.addCert = async function () {
             const name = prompt('Certification name:'); if (!name) return;
-            const issuer = prompt('Issuer:') || '';
-            const date = prompt('Date:') || '';
-            const link = prompt('Link:') || '#';
+            const issuer = prompt('Issuer:') || ''; const date = prompt('Date:') || ''; const link = prompt('Link:') || '#';
             certs.push({ id: 'c' + Date.now(), name, issuer, date, link, lbl: issuer[0] || '?', color: '#7c5cfc' });
-            await window.saveFieldToCloud('cloud_certs', JSON.stringify(certs));
-            renderCerts();
+            await window.saveFieldToCloud('cloud_certs', JSON.stringify(certs)); renderCerts();
         };
 
-        window.delCert = async function (id) {
-            if (!confirm('Remove this certification?')) return;
-            certs = certs.filter(c => c.id !== id);
-            await window.saveFieldToCloud('cloud_certs', JSON.stringify(certs));
-            renderCerts();
-        };
+        window.delCert = async function (id) { if (!confirm('Remove this certification?')) return; certs = certs.filter(c => c.id !== id); await window.saveFieldToCloud('cloud_certs', JSON.stringify(certs)); renderCerts(); };
 
         function renderCerts() {
-            const g = document.getElementById('cert-grid'); if (!g) return;
-            g.innerHTML = '';
+            const g = document.getElementById('cert-grid'); if (!g) return; g.innerHTML = '';
             certs.forEach(c => {
-                const el = document.createElement('div');
-                el.className = 'cert-card';
-                el.innerHTML = `<button class="cert-del" onclick="delCert('${c.id}');event.stopPropagation()">✕</button>
-          <div class="cert-hd"><div class="cert-badge" style="color:${c.color || 'var(--primary)'}">${c.lbl || (c.issuer ? c.issuer[0] : '?')}</div><div class="cert-date">${c.date}</div></div>
-          <div class="cert-name">${c.name}</div><div class="cert-iss">${c.issuer}</div>`;
+                const el = document.createElement('div'); el.className = 'cert-card';
+                el.setAttribute('data-cursor', 'cert'); el.setAttribute('data-cursor-icon', 'medal'); el.setAttribute('data-cursor-color', '#fbbf24');
+                el.innerHTML = `<button class="cert-del" onclick="delCert('${c.id}');event.stopPropagation()" data-cursor="delete" data-cursor-icon="trash" data-cursor-color="#ef4444">✕</button><div class="cert-hd"><div class="cert-badge" style="color:${c.color || 'var(--primary)'}">${c.lbl || (c.issuer ? c.issuer[0] : '?')}</div><div class="cert-date">${c.date}</div></div><div class="cert-name">${c.name}</div><div class="cert-iss">${c.issuer}</div>`;
                 g.appendChild(el);
             });
-            if (editing) {
-                const ac = document.createElement('button');
-                ac.className = 'add-cert';
-                ac.innerHTML = 'Add Certification';
-                ac.onclick = window.addCert;
-                g.appendChild(ac);
-            }
+            if (editing) { const ac = document.createElement('button'); ac.className = 'add-cert'; ac.innerHTML = 'Add Certification'; ac.setAttribute('data-cursor', 'add'); ac.setAttribute('data-cursor-icon', 'plus-circle'); ac.setAttribute('data-cursor-color', '#22c55e'); ac.onclick = window.addCert; g.appendChild(ac); }
         }
 
         window.handlePics = async function (e) {
-            const files = Array.from(e.target.files); if (!files.length) return;
-            let hasError = false;
+            const files = Array.from(e.target.files); if (!files.length) return; let hasError = false;
             for (const f of files) {
                 const compressed = await compressImage(f); if (!compressed) continue;
                 const id = 'photo_' + Date.now() + Math.random().toString(36).substr(2, 5);
                 const caption = prompt(`Caption for ${f.name}:`) || '';
-                const formData = new FormData();
-                formData.append("image", compressed.split(',')[1]);
-                try {
-                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
-                    const data = await res.json();
-                    if (data.success) photos.push({ id, src: data.data.url, caption });
-                    else hasError = true;
-                } catch { hasError = true; }
+                const formData = new FormData(); formData.append("image", compressed.split(',')[1]);
+                try { const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData }); const data = await res.json(); if (data.success) photos.push({ id, src: data.data.url, caption }); else hasError = true; } catch { hasError = true; }
             }
             if (hasError) alert("One or more uploads failed.");
-            await window.saveFieldToCloud('cloud_photos', JSON.stringify(photos));
-            e.target.value = '';
-            renderPhotos();
+            await window.saveFieldToCloud('cloud_photos', JSON.stringify(photos)); e.target.value = ''; renderPhotos();
         };
 
         async function renderPhotos() {
-            const g = document.getElementById('gal'); if (!g) return;
-            g.innerHTML = '';
-            if (!photos.length) {
-                g.innerHTML = `<div class="gal-empty"><h3 style="margin-bottom:8px">No photos yet</h3><p>Enable Edit Mode to upload</p></div>`;
-            } else {
+            const g = document.getElementById('gal'); if (!g) return; g.innerHTML = '';
+            if (!photos.length) { g.innerHTML = `<div class="gal-empty"><h3 style="margin-bottom:8px">No photos yet</h3><p>Enable Edit Mode to upload</p></div>`; }
+            else {
                 photos.forEach(p => {
-                    const el = document.createElement('div');
-                    el.className = 'gal-item';
+                    const el = document.createElement('div'); el.className = 'gal-item';
+                    el.setAttribute('data-cursor', 'image'); el.setAttribute('data-cursor-icon', 'zoom-in'); el.setAttribute('data-cursor-color', '#f472b6');
                     el.onclick = () => window.openLB(p.src, p.caption);
-                    el.innerHTML = `<img src="${p.src}" alt="${p.caption || ''}"/><div class="gal-cap">${p.caption || ''}</div><button class="gal-del" onclick="delPhoto('${p.id}');event.stopPropagation()">✕</button>`;
+                    el.innerHTML = `<img src="${p.src}" alt="${p.caption || ''}"/><div class="gal-cap">${p.caption || ''}</div><button class="gal-del" onclick="delPhoto('${p.id}');event.stopPropagation()" data-cursor="delete" data-cursor-icon="trash" data-cursor-color="#ef4444">✕</button>`;
                     g.appendChild(el);
                 });
             }
-            if (editing) {
-                const ap = document.createElement('button');
-                ap.className = 'add-photo';
-                ap.onclick = () => document.getElementById('pic-up').click();
-                ap.innerHTML = '+ Add Photos';
-                g.appendChild(ap);
-            }
+            if (editing) { const ap = document.createElement('button'); ap.className = 'add-photo'; ap.setAttribute('data-cursor', 'add'); ap.setAttribute('data-cursor-icon', 'plus-circle'); ap.setAttribute('data-cursor-color', '#22c55e'); ap.onclick = () => document.getElementById('pic-up').click(); ap.innerHTML = '+ Add Photos'; g.appendChild(ap); }
         }
 
-        window.delPhoto = async function (id) {
-            if (!confirm('Remove this photo?')) return;
-            photos = photos.filter(p => p.id !== id);
-            await window.saveFieldToCloud('cloud_photos', JSON.stringify(photos));
-            renderPhotos();
-        };
+        window.delPhoto = async function (id) { if (!confirm('Remove this photo?')) return; photos = photos.filter(p => p.id !== id); await window.saveFieldToCloud('cloud_photos', JSON.stringify(photos)); renderPhotos(); };
 
         window.rescuePhotos = async function () {
             if (!isAdmin) { alert("Please enable Edit Mode first!"); return; }
             try {
                 const request = indexedDB.open("MEZ_Portfolio_DB", 1);
                 request.onsuccess = async e => {
-                    const dbL = e.target.result;
-                    if (!dbL.objectStoreNames.contains("photos")) { alert("No local database found."); return; }
+                    const dbL = e.target.result; if (!dbL.objectStoreNames.contains("photos")) { alert("No local database found."); return; }
                     const storeReq = dbL.transaction("photos", "readonly").objectStore("photos").getAll();
                     storeReq.onsuccess = async () => {
-                        const local = storeReq.result;
-                        if (!local.length) { alert("No local photos found."); return; }
+                        const local = storeReq.result; if (!local.length) { alert("No local photos found."); return; }
                         alert(`Found ${local.length} photos. Uploading to ImgBB...`);
-                        let rescued = []; let hasError = false;
-                        for (const p of local) {
-                            if (p.src.startsWith('http')) { rescued.push(p); continue; }
-                            const formData = new FormData();
-                            formData.append("image", p.src.split(',')[1]);
-                            try {
-                                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
-                                const data = await res.json();
-                                if (data.success) rescued.push({ id: 'photo_rescued_' + Date.now(), src: data.data.url, caption: p.caption });
-                                else hasError = true;
-                            } catch { hasError = true; }
-                        }
+                        let rescued = [], hasError = false;
+                        for (const p of local) { if (p.src.startsWith('http')) { rescued.push(p); continue; } const formData = new FormData(); formData.append("image", p.src.split(',')[1]); try { const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData }); const data = await res.json(); if (data.success) rescued.push({ id: 'photo_rescued_' + Date.now(), src: data.data.url, caption: p.caption }); else hasError = true; } catch { hasError = true; } }
                         if (hasError) alert("Some photos failed to rescue.");
                         await window.saveFieldToCloud('cloud_photos', JSON.stringify(rescued));
-                        photos = rescued; renderPhotos();
-                        alert(`Done! ${rescued.length} photos rescued.`);
+                        photos = rescued; renderPhotos(); alert(`Done! ${rescued.length} photos rescued.`);
                     };
                 };
                 request.onerror = () => alert("Could not open local database.");
             } catch { alert("Upload failed."); }
         };
 
-        window.openLB = (src, cap) => {
-            document.getElementById('lb-img').src = src;
-            document.getElementById('lb-cap').textContent = cap || '';
-            document.getElementById('lb').classList.add('open');
-        };
+        window.openLB = (src, cap) => { document.getElementById('lb-img').src = src; document.getElementById('lb-cap').textContent = cap || ''; document.getElementById('lb').classList.add('open'); };
         window.closeLB = () => document.getElementById('lb').classList.remove('open');
-
         window.toggleMob = () => document.getElementById('mob').classList.toggle('open');
-        window.toggleTheme = () => {
-            document.body.classList.toggle('light-mode');
-            localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-            if (window._threeSetLight) window._threeSetLight(document.body.classList.contains('light-mode'));
-        };
+        window.toggleTheme = () => { document.body.classList.toggle('light-mode'); localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); if (window._threeSetLight) window._threeSetLight(document.body.classList.contains('light-mode')); };
 
         async function init() {
-            if (localStorage.getItem('theme') === 'light') {
-                document.body.classList.add('light-mode');
-                if (window._threeSetLight) window._threeSetLight(true);
-            }
+            if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); }
             await loadFieldsFromCloud();
             initEditableFields();
             renderProjects(); renderCerts(); renderPhotos(); renderCV();
