@@ -2034,7 +2034,8 @@
                 if (pFilter !== 'all' && p.cat !== pFilter) return;
                 const d = document.createElement('div');
                 d.className = 'proj-card';
-                const linkBtn = (p.link && p.link !== '#') ? `<a href="${p.link}" target="_blank" class="btn btn-p btn-s" style="margin-top: 10px; justify-content: center;">Play</a>` : '';
+                let linkText = p.cat === 'game' ? 'Play' : 'View';
+                const linkBtn = (p.link && p.link !== '#') ? `<a href="${p.link}" target="_blank" class="btn btn-p btn-s" style="margin-top: 10px; justify-content: center;">${linkText}</a>` : '';
                 d.innerHTML = `<div class="proj-cat">${p.cat === 'game' ? 'Game' : 'Management System'}</div><div class="proj-name">${p.name}</div><div class="proj-desc">${p.desc}</div><div class="proj-stack">${p.stack.map(s => `<span class="stag">${s}</span>`).join('')}</div>${linkBtn}${editing ? `<div style="margin-top:15px; display:flex; justify-content:flex-end;"><button class="btn-d" onclick="delProj('${p.id}')">Delete</button></div>` : ''}`;
                 g.appendChild(d);
             });
