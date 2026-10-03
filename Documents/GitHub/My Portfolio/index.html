@@ -666,9 +666,28 @@
             font-size: .75rem;
             color: var(--muted);
             font-weight: 600;
-            min-width: 72px;
+            min-width: 90px;
             text-transform: uppercase;
             letter-spacing: .05em;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 11px;
+            border-radius: 6px;
+            font-size: .76rem;
+            font-weight: 500;
+            background: rgba(99, 102, 241, .08);
+            border: 1px solid rgba(99, 102, 241, .2);
+            color: var(--text);
+            transition: all .2s ease;
+        }
+
+        .badge:hover {
+            border-color: var(--primary);
+            color: var(--primary-l);
+            transform: translateY(-1px);
         }
 
         .soc-edit {
@@ -1624,18 +1643,22 @@
                         <div class="stack-g">
                             <div class="stack-row"><span class="stack-lbl">Frontend</span><span
                                     class="badge">Next.js 16</span><span class="badge">React 19</span><span
-                                    class="badge">TypeScript</span><span class="badge">TailwindCSS</span><span
-                                    class="badge">Capacitor Mobile</span></div>
+                                    class="badge">TypeScript</span><span class="badge">JavaScript</span><span
+                                    class="badge">TailwindCSS</span><span class="badge">Capacitor</span><span
+                                    class="badge">HTML5</span><span class="badge">CSS3</span></div>
                             <div class="stack-row"><span class="stack-lbl">Backend</span><span
-                                    class="badge">NestJS</span><span class="badge">Node.js</span><span
-                                    class="badge">TypeORM</span><span class="badge">C# / .NET</span><span
-                                    class="badge">PHP</span></div>
-                            <div class="stack-row"><span class="stack-lbl">Databases</span><span
-                                    class="badge">PostgreSQL</span><span class="badge">MySQL</span><span
-                                    class="badge">Firebase Firestore</span></div>
-                            <div class="stack-row"><span class="stack-lbl">Architecture</span><span
-                                    class="badge">Saga Pattern</span><span class="badge">WebSockets (Pusher)</span><span
-                                    class="badge">Docker</span><span class="badge">Git / GitHub Actions</span></div>
+                                    class="badge">NestJS</span><span class="badge">C#</span><span
+                                    class="badge">.NET</span><span class="badge">PHP</span><span
+                                    class="badge">Node.js</span><span class="badge">PostgreSQL</span><span
+                                    class="badge">MySQL</span><span class="badge">TypeORM</span><span
+                                    class="badge">Pusher WebSockets</span></div>
+                            <div class="stack-row"><span class="stack-lbl">Games</span><span
+                                    class="badge">Canvas API</span><span class="badge">Vanilla JS</span><span
+                                    class="badge">Game Physics</span><span class="badge">Particle Systems</span></div>
+                            <div class="stack-row"><span class="stack-lbl">Tools &amp; DevOps</span><span
+                                    class="badge">Docker</span><span class="badge">Git</span><span
+                                    class="badge">GitHub</span><span class="badge">GitHub Actions</span><span
+                                    class="badge">Postman</span><span class="badge">VS Code</span></div>
                         </div>
                     </div>
                 </div>
