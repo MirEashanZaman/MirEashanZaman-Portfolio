@@ -776,7 +776,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .stag {
@@ -787,6 +787,74 @@
             background: rgba(59, 130, 246, .1);
             border: 1px solid rgba(59, 130, 246, .2);
             color: var(--accent);
+        }
+
+        .proj-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+
+        .btn-live {
+            background: var(--primary);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: .8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: all .2s ease;
+        }
+
+        .btn-live:hover {
+            background: var(--primary-l);
+            transform: translateY(-2px);
+        }
+
+        .btn-gh {
+            background: rgba(255, 255, 255, .05);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: .8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: all .2s ease;
+        }
+
+        .btn-gh:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .btn-apk {
+            background: rgba(34, 197, 94, .12);
+            border: 1px solid rgba(34, 197, 94, .3);
+            color: #4ade80;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: .8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: all .2s ease;
+        }
+
+        .btn-apk:hover {
+            background: rgba(34, 197, 94, .25);
+            transform: translateY(-2px);
         }
 
         .add-card {
@@ -1394,7 +1462,12 @@
             <li><button onclick="go('contact')" data-p="contact">Contact</button></li>
         </ul>
         <div class="nav-right">
-            <button class="btn-theme" id="theme-toggle" onclick="toggleTheme()">
+            <a href="https://github.com/MirEashanZaman" target="_blank" class="btn-theme" title="GitHub Profile" style="color:var(--text); text-decoration:none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.94 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02.005 2.04.138 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.62-2.81 5.63-5.48 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+            </a>
+            <button class="btn-theme" id="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
                 <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2">
                     <circle cx="12" cy="12" r="5"></circle>
@@ -1428,6 +1501,12 @@
         <button onclick="go('photography')" data-p="photography">Photography</button>
         <button onclick="go('resume')" data-p="resume">Resume</button>
         <button onclick="go('contact')" data-p="contact">Contact</button>
+        <a href="https://github.com/MirEashanZaman" target="_blank" style="padding: 8px 12px; font-size: .95rem; font-weight: 500; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.94 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02.005 2.04.138 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.62-2.81 5.63-5.48 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+            GitHub Profile
+        </a>
         <button class="btn-edit" id="ebtn2" onclick="toggleEdit()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -1447,14 +1526,13 @@
                         <line x1="8" y1="21" x2="16" y2="21" />
                         <line x1="12" y1="17" x2="12" y2="21" />
                     </svg>
-                    System Ready
+                    Full-Stack &amp; Enterprise Software Engineer
                 </div>
                 <div>
                     <div class="h-hi">Hi, I'm</div>
                     <div class="h-name">Mir Eashan Zaman</div>
                 </div>
-                <p class="h-sub" data-f="home-sub" contenteditable="false">CSE student @ AIUB · Full-stack developer ·
-                    Browser game builder</p>
+                <p class="h-sub" data-f="home-sub" contenteditable="false">Full-Stack Software Engineer · CSE @ AIUB · Enterprise APIs, Next.js &amp; NestJS Platforms, Mobile Apps &amp; Canvas Games</p>
                 <div class="h-ctas">
                     <button class="btn btn-p" onclick="go('portfolio')">View My Projects</button>
                     <button class="btn btn-o" onclick="go('contact')">Contact Me</button>
@@ -1533,34 +1611,31 @@
                     <div class="about-right">
                         <h2>About Me</h2>
                         <p data-f="a1" contenteditable="false">I'm Mir Eashan Zaman, a Computer Science &amp;
-                            Engineering student at American International University-Bangladesh (AIUB), progressing
-                            through my undergraduate studies with a focus on building real, deployable systems.</p>
-                        <p data-f="a2" contenteditable="false">I build across the full stack — management systems in PHP
-                            &amp; C#, browser games in JS/HTML, and interactive web UIs. Each project I ship is
-                            production-ready and solves a real problem.</p>
-                        <p data-f="a3" contenteditable="false">Outside academics, I spend time coding personal projects
-                            and playing games — two hobbies that constantly cross-pollinate. My browser games started as
-                            curiosity experiments and became my most-visited projects.</p>
+                            Engineering student at American International University-Bangladesh (AIUB), specializing in architecting distributed backend APIs, enterprise web systems, cross-platform mobile apps, and interactive canvas engines.</p>
+                        <p data-f="a2" contenteditable="false">I design resilient systems from end to end — engineered with NestJS, TypeORM, PostgreSQL, Next.js, and Capacitor. My experience spans enterprise architectural patterns like Saga Orchestration, Strategy, Observer, and token-bucket rate limiting alongside interactive real-time experiences.</p>
+                        <p data-f="a3" contenteditable="false">Outside of building enterprise software, I build custom browser arcade games with physics and particle systems. Every system I ship is production-ready, clean, and built for real users.</p>
                         <div class="cur-card">
-                            <div class="cur-item"><label>Studying</label><span data-f="cur1" contenteditable="false">CSE
-                                    at AIUB</span></div>
+                            <div class="cur-item"><label>Studying</label><span data-f="cur1" contenteditable="false">BSc in CSE at AIUB</span></div>
                             <div class="cur-item"><label>Focus</label><span data-f="cur2"
-                                    contenteditable="false">Full-stack &amp; AI tools</span></div>
-                            <div class="cur-item"><label>Playing</label><span data-f="cur3"
-                                    contenteditable="false">Whatever's on my desk</span></div>
+                                    contenteditable="false">Enterprise Full-Stack &amp; System Architecture</span></div>
+                            <div class="cur-item"><label>Status</label><span data-f="cur3"
+                                    contenteditable="false">Building &amp; Shipping</span></div>
                         </div>
                         <div class="stack-g">
                             <div class="stack-row"><span class="stack-lbl">Frontend</span><span
-                                    class="badge">HTML5</span><span class="badge">CSS3</span><span
-                                    class="badge">JavaScript ES6+</span></div>
+                                    class="badge">Next.js 16</span><span class="badge">React 19</span><span
+                                    class="badge">TypeScript</span><span class="badge">TailwindCSS</span><span
+                                    class="badge">Capacitor Mobile</span></div>
                             <div class="stack-row"><span class="stack-lbl">Backend</span><span
-                                    class="badge">PHP</span><span class="badge">MySQL</span><span
-                                    class="badge">C#</span></div>
-                            <div class="stack-row"><span class="stack-lbl">Games</span><span class="badge">Canvas
-                                    API</span><span class="badge">Vanilla JS</span></div>
-                            <div class="stack-row"><span class="stack-lbl">Tools</span><span
-                                    class="badge">Git</span><span class="badge">GitHub</span><span class="badge">VS
-                                    Code</span><span class="badge">XAMPP</span></div>
+                                    class="badge">NestJS</span><span class="badge">Node.js</span><span
+                                    class="badge">TypeORM</span><span class="badge">C# / .NET</span><span
+                                    class="badge">PHP</span></div>
+                            <div class="stack-row"><span class="stack-lbl">Databases</span><span
+                                    class="badge">PostgreSQL</span><span class="badge">MySQL</span><span
+                                    class="badge">Firebase Firestore</span></div>
+                            <div class="stack-row"><span class="stack-lbl">Architecture</span><span
+                                    class="badge">Saga Pattern</span><span class="badge">WebSockets (Pusher)</span><span
+                                    class="badge">Docker</span><span class="badge">Git / GitHub Actions</span></div>
                         </div>
                     </div>
                 </div>
@@ -1572,12 +1647,13 @@
             <div class="container">
                 <div class="ph">
                     <h2>My Projects</h2>
-                    <p>Games, management systems and web UIs I've built</p>
+                    <p>Enterprise platforms, distributed backends, mobile apps &amp; interactive games</p>
                 </div>
                 <div class="filter-tabs">
                     <button class="tab on" onclick="filterP('all',this)">All</button>
-                    <button class="tab" onclick="filterP('game',this)">Games</button>
+                    <button class="tab" onclick="filterP('enterprise',this)">Enterprise &amp; Full-Stack</button>
                     <button class="tab" onclick="filterP('management',this)">Management Systems</button>
+                    <button class="tab" onclick="filterP('game',this)">Games &amp; Interactive</button>
                 </div>
                 <div class="proj-grid" id="proj-grid"></div>
             </div>
@@ -1642,18 +1718,14 @@
                         </div>
                         <div class="tl">
                             <div class="tl-item exp">
-                                <div class="tl-date" data-f="ex1d" contenteditable="false">2023 – Present</div>
-                                <div class="tl-title" data-f="ex1t" contenteditable="false">Full Stack Developer
-                                    (Freelance)</div>
-                                <div class="tl-desc" data-f="ex1x" contenteditable="false">Developing management systems
-                                    and web applications for clients using PHP, MySQL, and JavaScript.</div>
+                                <div class="tl-date" data-f="ex1d" contenteditable="false">2024 – Present</div>
+                                <div class="tl-title" data-f="ex1t" contenteditable="false">Full-Stack &amp; Enterprise Software Engineer</div>
+                                <div class="tl-desc" data-f="ex1x" contenteditable="false">Architecting enterprise multi-tier logistics systems, distributed NestJS REST APIs, Next.js web applications, and Capacitor mobile clients with real-time telematics and WebSocket communication.</div>
                             </div>
                             <div class="tl-item exp">
                                 <div class="tl-date" data-f="ex2d" contenteditable="false">2022 – Present</div>
-                                <div class="tl-title" data-f="ex2t" contenteditable="false">Game Developer (Hobbyist)
-                                </div>
-                                <div class="tl-desc" data-f="ex2x" contenteditable="false">Creating interactive browser
-                                    games using vanilla JavaScript and HTML5 Canvas API.</div>
+                                <div class="tl-title" data-f="ex2t" contenteditable="false">Game &amp; Canvas Developer (Creative)</div>
+                                <div class="tl-desc" data-f="ex2x" contenteditable="false">Engineering interactive browser arcade games, physics mechanics, and custom particle engines using HTML5 Canvas API and JavaScript.</div>
                             </div>
                         </div>
                     </div>
@@ -1668,11 +1740,9 @@
                         </div>
                         <div class="tl">
                             <div class="tl-item edu">
-                                <div class="tl-date" data-f="ed1d" contenteditable="false">Present</div>
-                                <div class="tl-title" data-f="ed1t" contenteditable="false">BSc in Computer Science
-                                    &amp; Engineering</div>
-                                <div class="tl-desc" data-f="ed1x" contenteditable="false">American International
-                                    University-Bangladesh (AIUB)</div>
+                                <div class="tl-date" data-f="ed1d" contenteditable="false">Undergraduate (Current)</div>
+                                <div class="tl-title" data-f="ed1t" contenteditable="false">BSc in Computer Science &amp; Engineering</div>
+                                <div class="tl-desc" data-f="ed1x" contenteditable="false">American International University-Bangladesh (AIUB)</div>
                             </div>
                         </div>
                     </div>
@@ -1683,7 +1753,7 @@
                         <circle cx="12" cy="8" r="6" />
                         <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
                     </svg>
-                    <h3>Certifications & Badges</h3>
+                    <h3>Certifications &amp; Badges</h3>
                 </div>
                 <div class="cert-grid" id="cert-grid"></div>
             </div>
@@ -1694,7 +1764,7 @@
             <div class="container">
                 <div class="ph">
                     <h2>Contact</h2>
-                    <p>Let's connect and build something together</p>
+                    <p>Let's connect and build something impactful together</p>
                 </div>
                 <div class="con-grid">
                     <div class="con-info">
@@ -1708,7 +1778,7 @@
                             </div>
                             <div class="con-body">
                                 <label>GitHub</label>
-                                <a id="cgh" href="https://github.com" target="_blank">github.com/mireashan</a>
+                                <a id="cgh" href="https://github.com/MirEashanZaman" target="_blank">github.com/MirEashanZaman</a>
                             </div>
                         </div>
 
@@ -1722,7 +1792,7 @@
                             </div>
                             <div class="con-body">
                                 <label>LinkedIn</label>
-                                <a id="cli" href="https://linkedin.com" target="_blank">linkedin.com/in/mireashan</a>
+                                <a id="cli" href="https://linkedin.com/in/mir-eashan-zaman-319474343" target="_blank">linkedin.com/in/mir-eashan-zaman-319474343</a>
                             </div>
                         </div>
 
@@ -1737,7 +1807,7 @@
                             </div>
                             <div class="con-body">
                                 <label>Email</label>
-                                <a id="cem" href="mailto:mireashan@example.com">mireashan@example.com</a>
+                                <a id="cem" href="mailto:mireashanzaman@gmail.com">mireashanzaman@gmail.com</a>
                             </div>
                         </div>
 
@@ -1771,7 +1841,7 @@
                         </div>
                         <button class="btn btn-p" style="width:100%;justify-content:center" onclick="sendForm()">Send
                             Message</button>
-                        <div class="form-ok" id="fok">Message Sent Through Mail</div>
+                        <div class="form-ok" id="fok">Message Sent Successfully!</div>
                     </div>
                 </div>
             </div>
@@ -1780,7 +1850,8 @@
 
     </div><!-- /app -->
 
-    <div class="ping"></div>EDIT MODE
+    <div class="edit-pill" id="epill">
+        <div class="ping"></div>EDIT MODE
     </div>
 
     <div class="lb" id="lb" onclick="closeLB(event)">
@@ -1815,10 +1886,139 @@
         // NEW: Initialize Storage
         const storage = getStorage(app);
 
+        // --- DEFAULT PORTFOLIO & REPOSITORIES (From GitHub & Live Work) ---
+        const DEFAULT_PROJECTS = [
+            {
+                id: 'p_oil_fe',
+                cat: 'enterprise',
+                name: 'Oil Supply & Delivery Platform (Frontend)',
+                desc: 'Next.js 16 + React 19 + TypeScript enterprise web app with real-time GPS telematics, live dispatch radar, automated tax invoicing (ISO 9001/BOL), e-POD signature verification, and Pusher WebSockets.',
+                stack: ['Next.js 16', 'React 19', 'TypeScript', 'TailwindCSS', 'Pusher', 'Capacitor'],
+                link: 'https://oil-supply-and-delivery-management.vercel.app',
+                gh: 'https://github.com/MirEashanZaman/oil-supply-and-delivery-management-system-frontend',
+                apk: 'https://drive.google.com/file/d/17powG4Vv6PfM3D-qfFs0M61HPuJGXPQc/view?usp=drive_link'
+            },
+            {
+                id: 'p_oil_be',
+                cat: 'enterprise',
+                name: 'Oil Supply & Delivery ERP (Backend API)',
+                desc: 'Distributed enterprise REST backend designed with NestJS, PostgreSQL & TypeORM. Implements Saga Orchestration, Strategy, Observer, Facade design patterns, token-bucket rate limiting, and automated test suites.',
+                stack: ['NestJS', 'PostgreSQL', 'TypeORM', 'TypeScript', 'Docker', 'Design Patterns'],
+                link: '',
+                gh: 'https://github.com/MirEashanZaman/Oil-Supply-Delivery-Management-System-Backend'
+            },
+            {
+                id: 'p_pharma',
+                cat: 'enterprise',
+                name: 'PharmaTrace (Supply-Chain Verification)',
+                desc: 'NestJS & TypeScript supply-chain batch traceability system for pharmaceutical batch verification, counterfeit detection, audit trails, and inventory regulation.',
+                stack: ['NestJS', 'TypeScript', 'PostgreSQL', 'TypeORM', 'REST API'],
+                link: '',
+                gh: 'https://github.com/MirEashanZaman/pharma-trace'
+            },
+            {
+                id: 'p_car',
+                cat: 'management',
+                name: 'Car Showroom Management System',
+                desc: 'Desktop management system built in C# for automotive showrooms to manage car inventory, customer financing contracts, sales transactions, and reporting.',
+                stack: ['C#', '.NET', 'SQL Server', 'Desktop UI'],
+                link: '',
+                gh: 'https://github.com/MirEashanZaman/Car-Showroom-Management-System'
+            },
+            {
+                id: 'p_ap_dotnet',
+                cat: 'management',
+                name: 'AP-.NET Enterprise Demos & Core',
+                desc: 'Advanced .NET enterprise application architecture repository with asynchronous pipelines, modular repository patterns, and business services.',
+                stack: ['C#', '.NET Core', 'LINQ', 'Entity Framework'],
+                link: '',
+                gh: 'https://github.com/MirEashanZaman/AP-.NET'
+            },
+            {
+                id: 'p_blood',
+                cat: 'management',
+                name: 'Blood Bridge (Donor Matching Platform)',
+                desc: 'Emergency blood donor connection system with geo-lookup, rapid recipient alerts, blood group inventory tracking, and request handling.',
+                stack: ['PHP', 'MySQL', 'JavaScript', 'Bootstrap'],
+                link: '',
+                gh: 'https://github.com/MirEashanZaman/Blood_Bridge'
+            },
+            {
+                id: 'p_hotel',
+                cat: 'management',
+                name: 'Hotel Management System',
+                desc: 'Hospitality management web application managing dynamic room allocations, guest check-in/out workflows, invoice billing, and revenue analytics.',
+                stack: ['PHP', 'MySQL', 'JavaScript', 'CSS3'],
+                link: '',
+                gh: 'https://github.com/MirEashanZaman/Hotel-Management-System'
+            },
+            {
+                id: 'p_pharmacy_pos',
+                cat: 'management',
+                name: 'Pharmacy POS & Inventory System',
+                desc: 'Full-featured pharmacy POS and inventory management platform tracking stock levels, drug expiration warnings, and prescription orders.',
+                stack: ['PHP', 'MySQL', 'JavaScript', 'HTML5'],
+                link: '',
+                gh: 'https://github.com/MirEashanZaman/Pharmacy_Management_System'
+            },
+            {
+                id: 'p_travel',
+                cat: 'management',
+                name: 'Travel Guide & Itinerary Planner',
+                desc: 'Destination exploration and itinerary booking web app connecting tourists with certified local guides and custom trip schedules.',
+                stack: ['PHP', 'MySQL', 'JavaScript', 'CSS3'],
+                link: '',
+                gh: 'https://github.com/MirEashanZaman/Travel-Guide'
+            },
+            {
+                id: 'p_chess',
+                cat: 'game',
+                name: 'Chess Master (Interactive Engine)',
+                desc: 'Full browser-based chess engine with move validation rules, legal move highlighting, check & checkmate detection, and state tracking.',
+                stack: ['JavaScript', 'HTML5', 'CSS3', 'Game Logic'],
+                link: 'https://chess-master-play.netlify.app/',
+                gh: 'https://github.com/MirEashanZaman/Chess-Master'
+            },
+            {
+                id: 'p_neon',
+                cat: 'game',
+                name: 'Neon Strike (Arcade Shooter)',
+                desc: 'Fast-paced, neon-aesthetic arcade shooter built on HTML5 Canvas API featuring dynamic particle fireworks, progressive difficulty, and responsive controls.',
+                stack: ['HTML5 Canvas', 'Vanilla JS', 'Particle Physics'],
+                link: 'https://neon-strike01.netlify.app/',
+                gh: 'https://github.com/MirEashanZaman/Neon-Strike'
+            },
+            {
+                id: 'p_snake',
+                cat: 'game',
+                name: 'Classic Retro Snake',
+                desc: 'Retro arcade snake game with responsive keyboard/touch grid mechanics, smooth animation frame loop, and persistent high score tracking.',
+                stack: ['JavaScript', 'HTML5 Canvas', 'Retro Audio'],
+                link: 'https://snake-game-nostalgia.netlify.app/',
+                gh: 'https://github.com/MirEashanZaman/Snake'
+            },
+            {
+                id: 'p_sky',
+                cat: 'game',
+                name: 'Sky Dasher (Endless Runner)',
+                desc: 'Dynamic endless runner game with procedural obstacle generation, physics-based jumping arcs, score milestones, and parallax backgrounds.',
+                stack: ['HTML5 Canvas', 'JavaScript', 'Game Physics'],
+                link: 'https://sky-dasher.netlify.app/',
+                gh: 'https://github.com/MirEashanZaman/sky-dasher'
+            }
+        ];
+
+        const DEFAULT_CERTS = [
+            { id: 'c1', name: 'Software Engineering & Enterprise Architecture', issuer: 'AIUB', date: '2025', link: '#', lbl: 'AIUB', color: '#6366f1' },
+            { id: 'c2', name: 'Full-Stack Web Development & Modern JavaScript', issuer: 'Web Tech', date: '2025', link: '#', lbl: 'WBT', color: '#3b82f6' },
+            { id: 'c3', name: 'Object-Oriented Programming in C# & .NET', issuer: 'AIUB', date: '2024', link: '#', lbl: '.NET', color: '#8b5cf6' },
+            { id: 'c4', name: 'Relational Database Design & Distributed Systems', issuer: 'RDBMS', date: '2024', link: '#', lbl: 'SQL', color: '#10b981' }
+        ];
+
         // --- STATE ---
         let editing = false;
         let isAdmin = false;
-        let projects = [], photos = [], certs = [];
+        let projects = [...DEFAULT_PROJECTS], photos = [], certs = [...DEFAULT_CERTS];
         let pFilter = 'all';
 
         // --- AUTHENTICATION ---
@@ -1966,9 +2166,9 @@
         }
 
         function loadSocials() {
-            const gh = localStorage.getItem('s_gh') || 'https://github.com';
-            const li = localStorage.getItem('s_li') || 'https://linkedin.com';
-            const em = localStorage.getItem('s_em') || 'hello@example.com';
+            const gh = localStorage.getItem('s_gh') || 'https://github.com/MirEashanZaman';
+            const li = localStorage.getItem('s_li') || 'https://linkedin.com/in/mir-eashan-zaman-319474343';
+            const em = localStorage.getItem('s_em') || 'mireashanzaman@gmail.com';
             document.getElementById('sgh').href = gh;
             document.getElementById('sli').href = li;
             document.getElementById('sem').href = em.startsWith('mailto:') ? em : 'mailto:' + em;
@@ -1985,12 +2185,34 @@
         }
 
         function loadContactLinks() {
-            const gh = localStorage.getItem('s_gh') || 'https://github.com';
-            const li = localStorage.getItem('s_li') || 'https://linkedin.com';
-            const em = (localStorage.getItem('s_em') || 'mireashan@example.com').replace('mailto:', '');
+            const gh = localStorage.getItem('s_gh') || 'https://github.com/MirEashanZaman';
+            const li = localStorage.getItem('s_li') || 'https://linkedin.com/in/mir-eashan-zaman-319474343';
+            const em = (localStorage.getItem('s_em') || 'mireashanzaman@gmail.com').replace('mailto:', '');
             const cgh = document.getElementById('cgh'); if (cgh) { cgh.href = gh; cgh.textContent = gh.replace('https://', ''); }
             const cli = document.getElementById('cli'); if (cli) { cli.href = li; cli.textContent = li.replace('https://', ''); }
             const cem = document.getElementById('cem'); if (cem) { cem.href = 'mailto:' + em; cem.textContent = em; }
+        }
+
+        // --- CONTACT FORM ---
+        window.sendForm = function () {
+            const name = document.getElementById('fn').value.trim();
+            const email = document.getElementById('fe').value.trim();
+            const msg = document.getElementById('fm').value.trim();
+
+            if (!name || !email || !msg) {
+                alert('Please fill out all fields before sending.');
+                return;
+            }
+
+            const subject = encodeURIComponent(`Portfolio Message from ${name}`);
+            const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${msg}`);
+            window.location.href = `mailto:mireashanzaman@gmail.com?subject=${subject}&body=${body}`;
+
+            const fok = document.getElementById('fok');
+            if (fok) {
+                fok.style.display = 'block';
+                setTimeout(() => { fok.style.display = 'none'; }, 4000);
+            }
         }
 
         // --- PROFILE PICTURE ---
@@ -2011,11 +2233,18 @@
         // --- PROJECTS (Cloud) ---
         window.addProj = async function () {
             const name = prompt('Project name:'); if (!name) return;
-            const cat = confirm('Is this a game?\nOK = Game | Cancel = Management') ? 'game' : 'management';
+            const catChoice = prompt('Category:\n1 = Enterprise & Full-Stack\n2 = Management Systems\n3 = Games & Interactive\n(Enter 1, 2, or 3):', '1');
+            let cat = 'enterprise';
+            if (catChoice === '2' || catChoice?.toLowerCase().includes('man')) cat = 'management';
+            else if (catChoice === '3' || catChoice?.toLowerCase().includes('gam')) cat = 'game';
+
             const desc = prompt('Short description:') || '';
             const stack = (prompt('Stack (comma separated):') || '').split(',').map(s => s.trim()).filter(Boolean);
-            const link = prompt('Project Link (URL):') || '#';
-            projects.push({ id: 'p' + Date.now(), cat, name, desc, stack, link });
+            const link = prompt('Live Demo URL (leave blank if none):') || '';
+            const gh = prompt('GitHub Repo URL (leave blank if none):') || '';
+            const apk = prompt('Android APK URL (leave blank if none):') || '';
+
+            projects.push({ id: 'p' + Date.now(), cat, name, desc, stack, link, gh, apk });
             await saveFieldToCloud('cloud_proj', JSON.stringify(projects));
             renderProjects();
         }
@@ -2030,14 +2259,52 @@
         function renderProjects() {
             const g = document.getElementById('proj-grid'); if (!g) return;
             g.innerHTML = '';
-            projects.forEach(p => {
+            
+            const list = (projects && projects.length) ? projects : DEFAULT_PROJECTS;
+
+            list.forEach(p => {
                 if (pFilter !== 'all' && p.cat !== pFilter) return;
                 const d = document.createElement('div');
                 d.className = 'proj-card';
-                const linkBtn = (p.cat === 'game' && p.link && p.link !== '#') ? `<a href="${p.link}" target="_blank" class="btn btn-p btn-s" style="margin-top: 10px; justify-content: center;">Play</a>` : '';
-                d.innerHTML = `<div class="proj-cat">${p.cat === 'game' ? 'Game' : 'Management System'}</div><div class="proj-name">${p.name}</div><div class="proj-desc">${p.desc}</div><div class="proj-stack">${p.stack.map(s => `<span class="stag">${s}</span>`).join('')}</div>${linkBtn}${editing ? `<div style="margin-top:15px; display:flex; justify-content:flex-end;"><button class="btn-d" onclick="delProj('${p.id}')">Delete</button></div>` : ''}`;
+
+                let catLabel = 'Enterprise & Full-Stack';
+                if (p.cat === 'game') catLabel = 'Game & Interactive';
+                else if (p.cat === 'management') catLabel = 'Management System';
+
+                // Action buttons
+                let actionBtns = '';
+                if (p.link && p.link !== '#') {
+                    actionBtns += `<a href="${p.link}" target="_blank" class="btn-live">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        ${p.cat === 'game' ? 'Play' : 'Live Demo'}
+                    </a>`;
+                }
+                if (p.gh && p.gh !== '#') {
+                    actionBtns += `<a href="${p.gh}" target="_blank" class="btn-gh">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.94 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02.005 2.04.138 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.62-2.81 5.63-5.48 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                        GitHub
+                    </a>`;
+                }
+                if (p.apk && p.apk !== '#') {
+                    actionBtns += `<a href="${p.apk}" target="_blank" class="btn-apk">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        APK App
+                    </a>`;
+                }
+
+                d.innerHTML = `
+                    <div>
+                        <div class="proj-cat">${catLabel}</div>
+                        <div class="proj-name">${p.name}</div>
+                        <div class="proj-desc">${p.desc}</div>
+                        <div class="proj-stack">${(p.stack || []).map(s => `<span class="stag">${s}</span>`).join('')}</div>
+                    </div>
+                    ${actionBtns ? `<div class="proj-actions">${actionBtns}</div>` : ''}
+                    ${editing ? `<div style="margin-top:15px; display:flex; justify-content:flex-end;"><button class="btn-d" onclick="delProj('${p.id}')">Delete</button></div>` : ''}
+                `;
                 g.appendChild(d);
             });
+
             if (editing) {
                 const ac = document.createElement('button');
                 ac.className = 'add-card';
