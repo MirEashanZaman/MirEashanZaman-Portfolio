@@ -20,14 +20,103 @@ async function loadMotion() {
     }
 }
 
-function runMotion(targets, keyframes, options) {
-    if (!motionAnimate || reducedMotion) return;
-    try {
-        const els = typeof targets === 'string' ? document.querySelectorAll(targets) : targets;
-        if (!els || (els.length !== undefined && els.length === 0)) return;
-        return motionAnimate(els, keyframes, options);
-    } catch (e) {
+function runMotion(targets, keyframes, options = {}) {
+    if (reducedMotion) return;
+    const els = typeof targets === 'string'
+        ? Array.from(document.querySelectorAll(targets))
+        : (targets instanceof NodeList || Array.isArray(targets) ? Array.from(targets) : (targets ? [targets] : []));
+    if (!els.length) return;
 
+    const normalizedOptions = { ...options };
+    if (normalizedOptions.easing && !normalizedOptions.ease) {
+        normalizedOptions.ease = normalizedOptions.easing;
+    }
+
+    if (motionAnimate) {
+        try {
+            return motionAnimate(els, keyframes, normalizedOptions);
+        } catch (e) {
+            return runWaapiFallback(els, keyframes, normalizedOptions);
+        }
+    }
+    return runWaapiFallback(els, keyframes, normalizedOptions);
+}
+
+function runWaapiFallback(els, keyframes, options = {}) {
+    const durationMs = Math.round((options.duration || 0.65) * 1000);
+    const baseDelay = typeof options.delay === 'number' ? options.delay : 0;
+    const stepDelay = typeof options.staggerStep === 'number' ? options.staggerStep : 0;
+
+    els.forEach((el, idx) => {
+        if (!el || typeof el.animate !== 'function') return;
+        const fromTransform = [];
+        const toTransform = [];
+        const fromFrame = {};
+        const toFrame = {};
+
+        if (keyframes.x) {
+            fromTransform.push(`translateX(${typeof keyframes.x[0] === 'number' ? keyframes.x[0] + 'px' : keyframes.x[0]})`);
+            toTransform.push(`translateX(${typeof keyframes.x[1] === 'number' ? keyframes.x[1] + 'px' : keyframes.x[1]})`);
+        }
+        if (keyframes.y) {
+            fromTransform.push(`translateY(${typeof keyframes.y[0] === 'number' ? keyframes.y[0] + 'px' : keyframes.y[0]})`);
+            toTransform.push(`translateY(${typeof keyframes.y[1] === 'number' ? keyframes.y[1] + 'px' : keyframes.y[1]})`);
+        }
+        if (keyframes.scale) {
+            fromTransform.push(`scale(${keyframes.scale[0]})`);
+            toTransform.push(`scale(${keyframes.scale[1]})`);
+        }
+        if (keyframes.rotate) {
+            fromTransform.push(`rotate(${keyframes.rotate[0]}deg)`);
+            toTransform.push(`rotate(${keyframes.rotate[1]}deg)`);
+        }
+        if (fromTransform.length) {
+            fromFrame.transform = fromTransform.join(' ');
+            toFrame.transform = toTransform.join(' ');
+        }
+        if (keyframes.opacity) {
+            fromFrame.opacity = keyframes.opacity[0];
+            toFrame.opacity = keyframes.opacity[1];
+        }
+        if (keyframes.filter) {
+            fromFrame.filter = keyframes.filter[0];
+            toFrame.filter = keyframes.filter[1];
+        }
+        if (keyframes.clipPath) {
+            fromFrame.clipPath = keyframes.clipPath[0];
+            toFrame.clipPath = keyframes.clipPath[1];
+        }
+
+        el.animate([fromFrame, toFrame], {
+            duration: durationMs,
+            delay: Math.round((baseDelay + idx * stepDelay) * 1000),
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            fill: 'both'
+        });
+    });
+}
+
+function observeEnter(el, onEnter) {
+    if (!el || reducedMotion) {
+        onEnter();
+        return;
+    }
+    if (motionInView) {
+        motionInView(el, () => { onEnter(); }, { amount: 0.08 });
+        return;
+    }
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    io.unobserve(el);
+                    onEnter();
+                }
+            });
+        }, { threshold: 0.08 });
+        io.observe(el);
+    } else {
+        onEnter();
     }
 }
 
@@ -675,63 +764,87 @@ window.toggleMob = () => {
     if (btn) btn.setAttribute('aria-expanded', String(open));
 };
 
-function flyIn(targets, fromX, fromY, delayVal = 0, duration = 0.65) {
+function offscreenDist(mult = 0.72) {
+    return Math.min(Math.round((window.innerWidth || 1200) * mult), 780);
+}
+
+function flyIn(targets, fromX, fromY, delayVal = 0, duration = 0.78, rotateDeg = 0, fromScale = 0.94) {
     runMotion(
         targets,
         {
             opacity: [0, 1],
             x: [fromX, 0],
             y: [fromY, 0],
-            filter: ['blur(10px)', 'blur(0px)']
+            scale: [fromScale, 1],
+            rotate: [rotateDeg, 0],
+            filter: ['blur(12px)', 'blur(0px)']
         },
-        { duration, delay: delayVal, easing: [0.16, 1, 0.3, 1] }
+        { duration, delay: delayVal, ease: [0.16, 1, 0.3, 1] }
     );
 }
 
+function flyStagger(selector, fromX, fromY, startDelay = 0.08, step = 0.085, duration = 0.74, rotateDeg = 0) {
+    const els = Array.from(document.querySelectorAll(selector));
+    els.forEach((el, idx) => {
+        flyIn(el, fromX, fromY, startDelay + idx * step, duration, rotateDeg, 0.94);
+    });
+}
+
 function animateCardsAlternating(selector) {
-    if (reducedMotion || !motionAnimate) return;
+    if (reducedMotion) return;
+    const dist = offscreenDist(0.68);
     const cards = Array.from(document.querySelectorAll(selector));
     cards.forEach((card, i) => {
-        const fromX = card.classList.contains('featured') ? -110 : (i % 2 === 0 ? -95 : 95);
-        const fromY = 24;
-        if (motionInView && i >= 4) {
+        const fromLeft = card.classList.contains('featured') || i % 2 === 0;
+        const fromX = fromLeft ? -dist : dist;
+        const rot = fromLeft ? -3.5 : 3.5;
+        if (i >= 4) {
             card.style.opacity = '0';
-            motionInView(card, () => {
-                flyIn(card, fromX, fromY, 0.04, 0.62);
-            }, { amount: 0.12 });
+            observeEnter(card, () => {
+                flyIn(card, fromX, 32, 0.04, 0.78, rot, 0.9);
+            });
         } else {
-            flyIn(card, fromX, fromY, 0.08 + i * 0.075, 0.65);
+            flyIn(card, fromX, 28, 0.08 + i * 0.09, 0.8, rot, 0.9);
+        }
+    });
+}
+
+function animatePhotosGallery() {
+    if (reducedMotion) return;
+    const dist = offscreenDist(0.75);
+    const items = Array.from(document.querySelectorAll('#gal .gal-item'));
+    items.forEach((item, i) => {
+        const mod = i % 3;
+        const fromX = mod === 0 ? -dist : (mod === 2 ? dist : 0);
+        const fromY = mod === 1 ? 260 : 40;
+        const rot = mod === 0 ? -6 : (mod === 2 ? 6 : 0);
+        const trigger = () => {
+            flyIn(item, fromX, fromY, i < 6 ? 0.08 + i * 0.09 : 0.04, 0.86, rot, 0.82);
+        };
+        if (i >= 6) {
+            item.style.opacity = '0';
+            observeEnter(item, trigger);
+        } else {
+            trigger();
         }
     });
 }
 
 function animatePageEntrance(page) {
-    if (reducedMotion || !motionAnimate) return;
+    if (reducedMotion) return;
     const el = document.getElementById('page-' + page);
     if (!el) return;
+    const dist = offscreenDist(0.72);
 
     if (page === 'home') {
+        flyIn('#page-home .hero-meta', -dist, 0, 0.02, 0.68, -2, 0.95);
+        flyStagger('#page-home .hero-word', -dist, 28, 0.08, 0.1, 0.82, -4);
+        flyIn('#page-home .hero-sub', -dist, 16, 0.28, 0.8, -1.5, 0.96);
+        flyIn('#page-home .hero-ctas', -dist * 0.85, 24, 0.38, 0.74, 0, 0.94);
+        flyIn('#page-home .hero-facts', -dist * 0.75, 36, 0.46, 0.76, 0, 0.94);
 
-        flyIn('#page-home .hero-meta', -90, 0, 0.02, 0.55);
-        runMotion(
-            '#page-home .hero-word',
-            { opacity: [0, 1], x: [-85, 0], y: [24, 0], filter: ['blur(12px)', 'blur(0px)'] },
-            { duration: 0.72, delay: motionStagger(0.09, { startDelay: 0.08 }), easing: [0.16, 1, 0.3, 1] }
-        );
-        flyIn('#page-home .hero-sub', -100, 10, 0.24, 0.68);
-        flyIn('#page-home .hero-ctas', -80, 16, 0.34, 0.62);
-        flyIn('#page-home .hero-facts', -60, 24, 0.42, 0.62);
-
-        runMotion(
-            '#page-home .arch-panel',
-            { opacity: [0, 1], x: [130, 0], scale: [0.94, 1], filter: ['blur(10px)', 'blur(0px)'] },
-            { duration: 0.78, delay: 0.16, easing: [0.16, 1, 0.3, 1] }
-        );
-        runMotion(
-            '#page-home .arch-node',
-            { opacity: [0, 1], x: [70, 0] },
-            { duration: 0.52, delay: motionStagger(0.075, { startDelay: 0.3 }), easing: [0.16, 1, 0.3, 1] }
-        );
+        flyIn('#page-home .arch-panel', dist, 18, 0.16, 0.88, 3.5, 0.9);
+        flyStagger('#page-home .arch-node', dist * 0.5, 0, 0.34, 0.085, 0.62, 1.5);
 
         if (!heroAnimatedOnce) {
             heroAnimatedOnce = true;
@@ -740,68 +853,31 @@ function animatePageEntrance(page) {
         return;
     }
 
-    flyIn(`#page-${page} .ph`, -90, 0, 0.02, 0.58);
+    flyIn(`#page-${page} .ph`, -dist, 0, 0.02, 0.72, -1.5, 0.96);
 
     if (page === 'about') {
-
-        flyIn('#page-about .photo-col', -120, 0, 0.1, 0.72);
+        flyIn('#page-about .photo-col', -dist, 24, 0.08, 0.88, -5, 0.84);
         runMotion(
             '#pbox',
-            { clipPath: ['inset(0 100% 0 0 round 16px)', 'inset(0 0% 0 0 round 16px)'], scale: [0.92, 1] },
-            { duration: 0.85, delay: 0.14, easing: [0.16, 1, 0.3, 1] }
+            { clipPath: ['inset(0 100% 0 0 round 16px)', 'inset(0 0% 0 0 round 16px)'], scale: [0.88, 1] },
+            { duration: 0.92, delay: 0.12, ease: [0.16, 1, 0.3, 1] }
         );
-
-        runMotion(
-            '#page-about .about-bio p',
-            { opacity: [0, 1], x: [110, 0], filter: ['blur(8px)', 'blur(0px)'] },
-            { duration: 0.65, delay: motionStagger(0.09, { startDelay: 0.14 }), easing: [0.16, 1, 0.3, 1] }
-        );
-        flyIn('#page-about .cur-card', 110, 16, 0.32, 0.65);
-        runMotion(
-            '#page-about .stack-row',
-            { opacity: [0, 1], x: [95, 0] },
-            { duration: 0.55, delay: motionStagger(0.08, { startDelay: 0.38 }), easing: [0.16, 1, 0.3, 1] }
-        );
+        flyStagger('#page-about .about-bio p', dist, 16, 0.14, 0.1, 0.78, 1.5);
+        flyIn('#page-about .cur-card', dist, 28, 0.36, 0.78, 2, 0.92);
+        flyStagger('#page-about .stack-row', dist * 0.85, 16, 0.42, 0.09, 0.72, 1);
     } else if (page === 'portfolio') {
-        flyIn('#page-portfolio .filter-bar', 0, -32, 0.08, 0.5);
+        flyIn('#page-portfolio .filter-bar', 0, -90, 0.06, 0.64, 0, 0.96);
         animateCardsAlternating('#proj-grid .proj-card');
     } else if (page === 'photography') {
-        const items = Array.from(document.querySelectorAll('#gal .gal-item'));
-        items.forEach((item, i) => {
-            const dir = i % 3 === 0 ? -110 : (i % 3 === 1 ? 0 : 110);
-            const fromY = i % 3 === 1 ? 80 : 20;
-            const runReveal = () => {
-                runMotion(
-                    item,
-                    {
-                        opacity: [0, 1],
-                        x: [dir, 0],
-                        y: [fromY, 0],
-                        scale: [0.9, 1],
-                        filter: ['blur(8px)', 'blur(0px)']
-                    },
-                    { duration: 0.72, delay: i < 6 ? 0.08 + i * 0.08 : 0.04, easing: [0.16, 1, 0.3, 1] }
-                );
-            };
-            if (motionInView && i >= 6) {
-                item.style.opacity = '0';
-                motionInView(item, runReveal, { amount: 0.12 });
-            } else {
-                runReveal();
-            }
-        });
+        animatePhotosGallery();
     } else if (page === 'resume') {
-        flyIn('#page-resume .cv-card', 0, -40, 0.08, 0.56);
-        flyIn('#page-resume .res-grid > div:first-child', -110, 0, 0.16, 0.68);
-        flyIn('#page-resume .res-grid > div:last-child', 110, 0, 0.22, 0.68);
+        flyIn('#page-resume .cv-card', 0, -110, 0.08, 0.7, 0, 0.94);
+        flyIn('#page-resume .res-grid > div:first-child', -dist, 20, 0.16, 0.82, -2.5, 0.92);
+        flyIn('#page-resume .res-grid > div:last-child', dist, 20, 0.22, 0.82, 2.5, 0.92);
         animateCardsAlternating('#cert-grid .cert-card');
     } else if (page === 'contact') {
-        runMotion(
-            '#page-contact .con-card',
-            { opacity: [0, 1], x: [-110, 0], filter: ['blur(8px)', 'blur(0px)'] },
-            { duration: 0.62, delay: motionStagger(0.09, { startDelay: 0.1 }), easing: [0.16, 1, 0.3, 1] }
-        );
-        flyIn('#page-contact .cf', 120, 0, 0.18, 0.72);
+        flyStagger('#page-contact .con-card', -dist, 16, 0.1, 0.1, 0.78, -3);
+        flyIn('#page-contact .cf', dist, 20, 0.18, 0.84, 3, 0.92);
     }
 }
 
@@ -1376,6 +1452,10 @@ function renderPhotos() {
         ap.textContent = 'Add photos';
         g.appendChild(ap);
     }
+
+    if (document.getElementById('page-photography')?.classList.contains('active')) {
+        animatePhotosGallery();
+    }
 }
 
 window.delPhoto = async function (id) {
@@ -1602,8 +1682,14 @@ async function init() {
     renderCV();
 
     await loadMotion();
+    flyIn('nav', 0, -72, 0, 0.68, 0, 1);
     go('home', true);
     initArchLivePanel();
+
+    const footerEl = document.querySelector('footer');
+    if (footerEl && !reducedMotion) {
+        observeEnter(footerEl, () => flyIn(footerEl, 0, 60, 0.04, 0.65, 0, 0.98));
+    }
 
     await loadFieldsFromCloud();
     await migrateLocalToCloud();
