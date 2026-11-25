@@ -431,11 +431,39 @@ nav {
     pointer-events: none;
 }
 
+.hero-wrap,
+.proj-grid,
+.gal,
+.about-grid,
+.con-grid,
+.cert-grid {
+    perspective: 1400px;
+}
+
 .spotlight-card {
     position: relative;
     overflow: hidden;
     transform-style: preserve-3d;
     will-change: transform;
+    transition: border-color var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease);
+}
+
+.spotlight-card:hover {
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+}
+
+body.light-mode .spotlight-card:hover {
+    box-shadow: 0 20px 44px rgba(17, 24, 39, 0.12);
+}
+
+.spotlight-card .proj-name,
+.spotlight-card .proj-actions,
+.spotlight-card .arch-head,
+.spotlight-card .arch-flow-wrap,
+.spotlight-card .arch-inspector,
+.spotlight-card .gal-cap {
+    transform: translateZ(20px);
+    transform-style: preserve-3d;
 }
 
 .spotlight-card::before {
