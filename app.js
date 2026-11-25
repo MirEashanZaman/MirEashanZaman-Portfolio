@@ -328,11 +328,29 @@ const DEFAULT_PROJECTS = [
         gh: 'https://github.com/MirEashanZaman/Oil-Supply-Delivery-Management-System-Backend'
     },
     {
+        id: 'p_ai_support',
+        cat: 'enterprise',
+        name: 'AI Customer Support Platform (Multi-Tenant B2B)',
+        desc: 'Multi-tenant B2B AI customer support platform featuring PostgreSQL pgvector with Row-Level Security (RLS), RabbitMQ ingestion sagas, Claude RAG citations, Shadow-DOM embeddable widget, and Socket.io live human handoff.',
+        stack: ['TypeScript', 'PostgreSQL', 'pgvector', 'RabbitMQ', 'Socket.io', 'Claude RAG'],
+        link: '',
+        gh: 'https://github.com/MirEashanZaman/ai-support-platform'
+    },
+    {
+        id: 'p_tuition_agent',
+        cat: 'enterprise',
+        name: 'Student Tuition Payment Agent (FinTechathon 2026)',
+        desc: 'Autonomous AI agent for paying foreign university tuition from Bangladesh (BDT) with READ_ONLY/DRAFT/EXECUTE guardrails, Saga rollbacks, step-up 2FA verification, and automated PDF payment certificates.',
+        stack: ['TypeScript', 'Next.js', 'AI Agents', 'Saga Pattern', '2FA', 'FinTech'],
+        link: '',
+        gh: 'https://github.com/MirEashanZaman/student-tuition-payment-agent'
+    },
+    {
         id: 'p_pharma',
         cat: 'enterprise',
-        name: 'PharmaTrace (Supply-Chain Verification)',
-        desc: 'NestJS & TypeScript supply-chain batch traceability system for pharmaceutical batch verification, counterfeit detection, audit trails, and inventory regulation.',
-        stack: ['NestJS', 'TypeScript', 'PostgreSQL', 'TypeORM', 'REST API'],
+        name: 'PharmaTrace (Blockchain Supply-Chain Platform)',
+        desc: 'Blockchain pharmaceutical track-and-trace platform with a NestJS Event Sourcing, CQRS, and Saga custody handover backend, Solidity ERC-721 burn-on-dispense & escrow smart contracts, and a Next.js frontend.',
+        stack: ['Next.js', 'NestJS', 'Solidity', 'PostgreSQL', 'CQRS', 'WebSockets'],
         link: '',
         gh: 'https://github.com/MirEashanZaman/pharma-trace'
     },
@@ -348,11 +366,11 @@ const DEFAULT_PROJECTS = [
     {
         id: 'p_ap_dotnet',
         cat: 'management',
-        name: 'AP-.NET Enterprise Demos & Core',
-        desc: 'Advanced .NET enterprise application architecture repository with asynchronous pipelines, modular repository patterns, and business services.',
-        stack: ['C#', '.NET Core', 'LINQ', 'Entity Framework'],
+        name: 'ASP.NET Enterprise Core & Labs',
+        desc: 'C# ASP.NET enterprise coursework and lab implementations from AIUB covering asynchronous pipelines, repository patterns, and business services.',
+        stack: ['C#', 'ASP.NET', 'LINQ', 'Entity Framework'],
         link: '',
-        gh: 'https://github.com/MirEashanZaman/AP-.NET'
+        gh: 'https://github.com/MirEashanZaman/ASP.NET'
     },
     {
         id: 'p_blood',
