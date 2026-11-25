@@ -70,6 +70,12 @@ function runWaapiFallback(els, keyframes, options = {}) {
             fromTransform.push(`rotate(${keyframes.rotate[0]}deg)`);
             toTransform.push(`rotate(${keyframes.rotate[1]}deg)`);
         }
+        if (keyframes.rotateY) {
+            fromTransform.unshift('perspective(1200px)');
+            toTransform.unshift('perspective(1200px)');
+            fromTransform.push(`rotateY(${keyframes.rotateY[0]}deg)`);
+            toTransform.push(`rotateY(${keyframes.rotateY[1]}deg)`);
+        }
         if (fromTransform.length) {
             fromFrame.transform = fromTransform.join(' ');
             toFrame.transform = toTransform.join(' ');
@@ -451,18 +457,193 @@ function attachSpotlight(el) {
         if (reducedMotion || window.innerWidth < 768) return;
         const nx = (px / rect.width - 0.5) * 2;
         const ny = (py / rect.height - 0.5) * 2;
-        const rx = (-ny * 3).toFixed(2);
-        const ry = (nx * 3).toFixed(2);
-        el.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
+        const rx = (-ny * 7.5).toFixed(2);
+        const ry = (nx * 7.5).toFixed(2);
+        el.style.transform = `perspective(1100px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(12px)`;
     });
     el.addEventListener('pointerleave', () => {
         if (reducedMotion) return;
         if (motionAnimate) {
-            runMotion(el, { transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0)' }, { duration: 0.35, easing: [0.22, 1, 0.36, 1] });
+            runMotion(el, { transform: 'perspective(1100px) rotateX(0deg) rotateY(0deg) translateZ(0px)' }, { duration: 0.45, ease: [0.22, 1, 0.36, 1] });
         } else {
             el.style.transform = '';
         }
     });
+}
+
+let scene3D = null;
+
+function set3DPageCamera(page) {
+    if (!scene3D) return;
+    const presets = {
+        home: { x: 0, y: 0.6, z: 9.2, coreX: 2.8, coreY: 0.4 },
+        about: { x: -1.4, y: 1.0, z: 10.2, coreX: -3.2, coreY: 0.8 },
+        portfolio: { x: 0.6, y: 1.5, z: 10.8, coreX: 3.4, coreY: -0.4 },
+        photography: { x: -0.8, y: 0.3, z: 9.6, coreX: 0, coreY: 1.4 },
+        resume: { x: 1.2, y: 0.9, z: 10.4, coreX: -2.8, coreY: -0.2 },
+        contact: { x: 0, y: 0.5, z: 9.4, coreX: 2.6, coreY: 0.6 }
+    };
+    scene3D.target = presets[page] || presets.home;
+}
+
+function update3DTheme() {
+    if (!scene3D) return;
+    const isLight = document.body.classList.contains('light-mode');
+    scene3D.applyTheme(isLight);
+}
+
+async function init3DScene() {
+    const canvas = document.getElementById('ambient-canvas');
+    if (!canvas || reducedMotion) return;
+
+    try {
+        const THREE = await import("https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js");
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight, false);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 0.6, 9.2);
+
+        const coreGroup = new THREE.Group();
+        coreGroup.position.set(2.8, 0.4, -1.5);
+        scene.add(coreGroup);
+
+        const outerGeo = new THREE.IcosahedronGeometry(1.75, 1);
+        const outerWire = new THREE.WireframeGeometry(outerGeo);
+        const outerMat = new THREE.LineBasicMaterial({ color: 0x2dd4bf, transparent: true, opacity: 0.32 });
+        const outerMesh = new THREE.LineSegments(outerWire, outerMat);
+        coreGroup.add(outerMesh);
+
+        const innerGeo = new THREE.OctahedronGeometry(0.95, 0);
+        const innerMat = new THREE.MeshBasicMaterial({ color: 0x2dd4bf, wireframe: true, transparent: true, opacity: 0.48 });
+        const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        coreGroup.add(innerMesh);
+
+        const ring1Geo = new THREE.TorusGeometry(2.55, 0.012, 8, 96);
+        const ring1Mat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.28 });
+        const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
+        ring1.rotation.x = Math.PI * 0.38;
+        ring1.rotation.y = Math.PI * 0.15;
+        coreGroup.add(ring1);
+
+        const ring2Geo = new THREE.TorusGeometry(3.15, 0.01, 8, 96);
+        const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x2dd4bf, transparent: true, opacity: 0.22 });
+        const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+        ring2.rotation.x = Math.PI * 0.62;
+        ring2.rotation.y = -Math.PI * 0.22;
+        coreGroup.add(ring2);
+
+        const satGeo = new THREE.SphereGeometry(0.065, 12, 12);
+        const satMat = new THREE.MeshBasicMaterial({ color: 0x2dd4bf });
+        const sat1 = new THREE.Mesh(satGeo, satMat);
+        const sat2 = new THREE.Mesh(satGeo, satMat);
+        coreGroup.add(sat1, sat2);
+
+        const gridGeo = new THREE.PlaneGeometry(36, 36, 36, 36);
+        gridGeo.rotateX(-Math.PI / 2);
+        const gridPos = gridGeo.attributes.position;
+        const baseY = new Float32Array(gridPos.count);
+        for (let i = 0; i < gridPos.count; i++) {
+            baseY[i] = gridPos.getY(i);
+        }
+        const gridMat = new THREE.MeshBasicMaterial({ color: 0x64748b, wireframe: true, transparent: true, opacity: 0.12 });
+        const terrain = new THREE.Mesh(gridGeo, gridMat);
+        terrain.position.set(0, -3.6, -6);
+        scene.add(terrain);
+
+        const pCount = 260;
+        const pPositions = new Float32Array(pCount * 3);
+        for (let i = 0; i < pCount; i++) {
+            pPositions[i * 3] = (Math.random() - 0.5) * 28;
+            pPositions[i * 3 + 1] = (Math.random() - 0.5) * 16;
+            pPositions[i * 3 + 2] = (Math.random() - 0.5) * 18 - 4;
+        }
+        const pGeo = new THREE.BufferGeometry();
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+        const pMat = new THREE.PointsMaterial({ color: 0x2dd4bf, size: 0.055, transparent: true, opacity: 0.45 });
+        const particles = new THREE.Points(pGeo, pMat);
+        scene.add(particles);
+
+        const state = {
+            target: { x: 0, y: 0.6, z: 9.2, coreX: 2.8, coreY: 0.4 },
+            mx: 0,
+            my: 0,
+            applyTheme(isLight) {
+                const accentHex = isLight ? 0x0f766e : 0x2dd4bf;
+                const neutralHex = isLight ? 0x64748b : 0x94a3b8;
+                outerMat.color.setHex(accentHex);
+                outerMat.opacity = isLight ? 0.28 : 0.34;
+                innerMat.color.setHex(accentHex);
+                innerMat.opacity = isLight ? 0.38 : 0.48;
+                ring1Mat.color.setHex(neutralHex);
+                ring2Mat.color.setHex(accentHex);
+                satMat.color.setHex(accentHex);
+                gridMat.color.setHex(neutralHex);
+                gridMat.opacity = isLight ? 0.14 : 0.11;
+                pMat.color.setHex(accentHex);
+                pMat.opacity = isLight ? 0.35 : 0.45;
+            }
+        };
+        scene3D = state;
+        state.applyTheme(document.body.classList.contains('light-mode'));
+
+        window.addEventListener('pointermove', (e) => {
+            state.mx = (e.clientX / window.innerWidth - 0.5) * 2;
+            state.my = (e.clientY / window.innerHeight - 0.5) * 2;
+        }, { passive: true });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight, false);
+        });
+
+        let clock = 0;
+        function renderLoop() {
+            requestAnimationFrame(renderLoop);
+            if (document.hidden) return;
+            clock += 0.012;
+
+            outerMesh.rotation.y = clock * 0.35;
+            outerMesh.rotation.x = Math.sin(clock * 0.25) * 0.35;
+            innerMesh.rotation.y = -clock * 0.55;
+            innerMesh.rotation.z = clock * 0.3;
+
+            ring1.rotation.z = clock * 0.22;
+            ring2.rotation.z = -clock * 0.18;
+
+            sat1.position.set(Math.cos(clock * 1.1) * 2.55, Math.sin(clock * 1.1) * 0.9, Math.sin(clock * 1.1) * 2.2);
+            sat2.position.set(Math.cos(-clock * 0.8 + 2) * 3.15, Math.sin(-clock * 0.8 + 2) * 1.4, Math.cos(-clock * 0.8 + 2) * 1.6);
+
+            const scrollOffset = Math.min(window.scrollY / 600, 2.5);
+            const t = state.target;
+            coreGroup.position.x += (t.coreX - coreGroup.position.x) * 0.04;
+            coreGroup.position.y += (t.coreY + Math.sin(clock * 0.8) * 0.22 - coreGroup.position.y) * 0.04;
+
+            camera.position.x += (t.x + state.mx * 1.25 - camera.position.x) * 0.045;
+            camera.position.y += (t.y - state.my * 0.75 - scrollOffset * 0.45 - camera.position.y) * 0.045;
+            camera.position.z += (t.z + scrollOffset * 0.35 - camera.position.z) * 0.045;
+            camera.lookAt(0, -scrollOffset * 0.2, -1.5);
+
+            for (let i = 0; i < gridPos.count; i++) {
+                const vx = gridPos.getX(i);
+                const vz = gridPos.getZ(i);
+                const wave = Math.sin(vx * 0.32 + clock * 1.1) * Math.cos(vz * 0.32 - clock * 0.8) * 0.45;
+                gridPos.setY(i, baseY[i] + wave);
+            }
+            gridPos.needsUpdate = true;
+
+            particles.rotation.y = clock * 0.035;
+            renderer.render(scene, camera);
+        }
+
+        renderLoop();
+    } catch (e) {
+        console.warn("Three.js 3D unavailable, falling back to 2D mesh:", e);
+        initAmbientMesh();
+    }
 }
 
 function attachMagnetic(el) {
@@ -753,6 +934,7 @@ window.toggleTheme = () => {
     const isLight = document.body.classList.contains('light-mode');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
     syncThemeUI();
+    update3DTheme();
     showToast(isLight ? 'Switched to light mode' : 'Switched to dark mode');
 };
 
@@ -769,6 +951,7 @@ function offscreenDist(mult = 0.72) {
 }
 
 function flyIn(targets, fromX, fromY, delayVal = 0, duration = 0.78, rotateDeg = 0, fromScale = 0.94) {
+    const rotY = fromX === 0 ? 0 : (fromX < 0 ? 20 : -20);
     runMotion(
         targets,
         {
@@ -777,6 +960,7 @@ function flyIn(targets, fromX, fromY, delayVal = 0, duration = 0.78, rotateDeg =
             y: [fromY, 0],
             scale: [fromScale, 1],
             rotate: [rotateDeg, 0],
+            rotateY: [rotY, 0],
             filter: ['blur(12px)', 'blur(0px)']
         },
         { duration, delay: delayVal, ease: [0.16, 1, 0.3, 1] }
@@ -918,6 +1102,7 @@ window.go = function (page, instantIndicator = false) {
         requestAnimationFrame(() => moveIndicator('filter-tabs', 'tab-indicator', activeTab, true));
     }
 
+    set3DPageCamera(page);
     animatePageEntrance(page);
 };
 
@@ -1668,10 +1853,13 @@ async function init() {
         });
     }
 
-    document.querySelectorAll('.spotlight-card').forEach(attachSpotlight);
+    document.querySelectorAll('.spotlight-card, .photo-box, .cv-card, .con-card, .cf').forEach((el) => {
+        el.classList.add('spotlight-card');
+        attachSpotlight(el);
+    });
     document.querySelectorAll('.magnetic-btn').forEach(attachMagnetic);
 
-    initAmbientMesh();
+    init3DScene();
 
     initEditableFields();
     loadSocials();
