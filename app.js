@@ -902,7 +902,32 @@ async function loadFieldsFromCloud() {
                 if (data[fieldId]) el.textContent = data[fieldId];
             });
             if (data.pf_pic) showProfilePic(data.pf_pic);
-            if (data.cloud_proj) projects = JSON.parse(data.cloud_proj);
+            if (data.cloud_proj) {
+                try {
+                    const cloudList = JSON.parse(data.cloud_proj);
+                    if (Array.isArray(cloudList) && cloudList.length) {
+                        const normCat = (c) => {
+                            const v = String(c || '').toLowerCase();
+                            if (v === 'game' || v === 'games') return 'game';
+                            if (v === 'management' || v === 'desktop') return 'management';
+                            return 'enterprise';
+                        };
+                        const hasCurrentFlagships = cloudList.some(p => p.id === 'p_ai_support') && cloudList.some(p => p.cat === 'enterprise');
+                        if (hasCurrentFlagships) {
+                            projects = cloudList.map(p => ({ ...p, cat: normCat(p.cat) }));
+                        } else {
+                            const defaultNames = new Set(DEFAULT_PROJECTS.map(p => p.name.toLowerCase()));
+                            const defaultIds = new Set(DEFAULT_PROJECTS.map(p => p.id));
+                            const extras = cloudList
+                                .filter(p => p && p.name && !defaultIds.has(p.id) && !defaultNames.has(p.name.toLowerCase()) && !/oil supply|pharmatrace|car showroom|blood bridge|hotel management|pharmacy|travel guide|chess master|neon strike|snake|sky dasher|ap-\.net|asp\.net/i.test(p.name))
+                                .map(p => ({ ...p, cat: normCat(p.cat) }));
+                            projects = [...DEFAULT_PROJECTS, ...extras];
+                        }
+                    }
+                } catch (err) {
+                    projects = [...DEFAULT_PROJECTS];
+                }
+            }
             if (data.cloud_certs) certs = JSON.parse(data.cloud_certs);
             if (data.cloud_cv) localStorage.setItem('pf_cv', data.cloud_cv);
             if (data.cloud_photos) photos = JSON.parse(data.cloud_photos);
@@ -965,7 +990,9 @@ window.toggleMob = () => {
 };
 
 function offscreenDist(mult = 0.72) {
-    return Math.min(Math.round((window.innerWidth || 1200) * mult), 780);
+    const w = window.innerWidth || 1200;
+    if (w <= 768) return Math.min(Math.round(w * 0.28), 110);
+    return Math.min(Math.round(w * mult), 780);
 }
 
 function flyIn(targets, fromX, fromY, delayVal = 0, duration = 0.78, rotateDeg = 0, fromScale = 0.94) {
